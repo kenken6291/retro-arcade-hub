@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="レトロアーケードハブ - ブラウザで遊べるクラシックゲーム（インベーダー、テトリス、ヘッドオン、パックマン）のゲームセンター風ランディングページです。サウンドとネオンエフェクト搭載。">
+  <meta name="keywords" content="レトロゲーム, アーケード, インベーダー, テトリス, ヘッドオン, パックマン, HTML5ゲーム, JavaScript, CSSネオン">
+  <meta name="author" content="kenken6291">
+  
+  <!-- OGP Tags -->
+  <meta property="og:title" content="RETRO ARCADE HUB - Classic Web Games">
+  <meta property="og:description" content="80年代のゲームセンターがブラウザで蘇る！インベーダー、テトリス、ヘッドオン、パックマンをプレイしよう。">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/hero_arcade.png">
+  
+  <title>RETRO ARCADE HUB - Classic Web Games</title>
+  <link rel="stylesheet" href="style.css?v=2">
+  <script src="app.js?v=2" defer></script>
+</head>
+<body class="crt-active">
+
+  <!-- CRT Screen Simulation Overlay -->
+  <div class="crt-overlay" id="global-crt-overlay"></div>
+  <div class="screen-curve" id="global-screen-curve"></div>
+
+  <!-- Dynamic Starfield Background Canvas -->
+  <canvas id="starfield"></canvas>
+
+  <!-- 3D Perspective Grid Background -->
+  <div class="grid-container">
+    <div class="grid-3d"></div>
+  </div>
+
+  <!-- CRT GLITCH LOADING OVERLAY -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-static"></div>
+    <h2 class="loading-text">LOADING CABINET</h2>
+    <div class="loading-progress-bar">
+      <div class="loading-progress" id="loading-progress"></div>
+    </div>
+    <p class="loading-sub" id="loading-sub-text">ESTABLISHING CONNECTION...</p>
+  </div>
+
+  <!-- HERO SECTION WITH RETRO ARCADE BACKGROUND -->
+  <section class="hero-section">
+    <div class="hero-background"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-logo-container">
+        <h1 class="hero-title">RETRO ARCADE</h1>
+        <p class="hero-subtitle">CLASSIC WEB GAME PORTAL</p>
+      </div>
+      
+      <!-- Informational Signboard -->
+      <div class="info-signboard">
+        <div class="sign-item">営業時間: 24時間無制限</div>
+        <div class="sign-item">1 PLAY: 25¢ (1 CREDIT)</div>
+        <div class="sign-item">PLAYERS: 1 PLAYER ONLY</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HUD CONTROL PANEL -->
+  <div class="hud-wrapper">
+    <div class="hud-panel" id="hud-controls">
+      <!-- Left side: Credit Control -->
+      <div class="hud-left">
+        <div class="credit-display" id="credit-display-box" title="クレジット残高">
+          <span>CREDIT</span>
+          <span class="credit-count" id="credit-count">00</span>
+        </div>
+        <button class="insert-coin-btn" id="insert-coin-btn" aria-label="コインを投入する">
+          INSERT COIN
+        </button>
+      </div>
+
+      <!-- Right side: Toggles & Volume -->
+      <div class="hud-right">
+        <!-- BGM Switch -->
+        <label class="toggle-control" for="bgm-toggle" title="レトロBGMのオン/オフ">
+          <span>BGM</span>
+          <input type="checkbox" id="bgm-toggle">
+          <div class="toggle-switch"></div>
+        </label>
+
+        <!-- CRT Effect Switch -->
+        <label class="toggle-control" for="crt-toggle" title="ブラウン管風フィルターのオン/オフ">
+          <span>CRT FILTER</span>
+          <input type="checkbox" id="crt-toggle" checked>
+          <div class="toggle-switch"></div>
+        </label>
+
+        <!-- Volume Controller -->
+        <div class="volume-control" title="音量調節">
+          <span style="font-size: 0.8rem; color: var(--neon-cyan); font-family: var(--font-arcade);">VOL</span>
+          <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5" style="width: 80px; accent-color: var(--neon-cyan); cursor: pointer;" aria-label="音量スライダー">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CABINETS GRID -->
+  <main>
+    <div class="cabinets-grid">
+
+      <!-- 1. SPACE INVADERS CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-invaders" id="cab-invaders">
+          <div class="cab-marquee">INVADERS</div>
+          
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-invaders">READY TO PLAY</div>
+          
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-invaders" class="demo-canvas" width="130" height="140"></canvas>
+            
+            <div class="screen-intro">
+              <p class="tagline">Space Shooter</p>
+              <h2 class="description">地球を侵略者から守れ！<br>迫りくるインベーダーを迎撃せよ。</h2>
+            </div>
+          </div>
+          
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+          
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="invaders" id="play-invaders">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="invaders" id="code-invaders">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
+      <!-- 2. TETRIS CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-tetris" id="cab-tetris">
+          <div class="cab-marquee">TETRIS</div>
+          
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-tetris">READY TO PLAY</div>
+          
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-tetris" class="demo-canvas" width="145" height="140"></canvas>
+            
+            <div class="screen-intro">
+              <p class="tagline">Block Puzzle</p>
+              <h2 class="description">降ってくるブロックを揃えて消せ！<br>ハイスコアを目指す不朽の名作。</h2>
+            </div>
+          </div>
+          
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+          
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="tetris" id="play-tetris">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="tetris" id="code-tetris">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
+      <!-- 3. HEAD-ON CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-headon" id="cab-headon">
+          <div class="cab-marquee">HEAD-ON</div>
+          
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-headon">READY TO PLAY</div>
+          
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-headon" class="demo-canvas" width="130" height="140"></canvas>
+            
+            <div class="screen-intro">
+              <p class="tagline">Dodge Racing</p>
+              <h2 class="description">衝突を避けてコース上のドットを集めろ！<br>緊迫の高速レーシングパズル。</h2>
+            </div>
+          </div>
+          
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+          
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="headon" id="play-headon">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="headon" id="code-headon">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
+      <!-- 4. PACMAN CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-pacman" id="cab-pacman">
+          <div class="cab-marquee">PACMAN</div>
+          
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-pacman">READY TO PLAY</div>
+          
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-pacman" class="demo-canvas" width="130" height="140"></canvas>
+            
+            <div class="screen-intro">
+              <p class="tagline">Maze Chase</p>
+              <h2 class="description">ゴーストから逃げながらエサを食べ尽くせ！<br>ポップで楽しい王道アーケード。</h2>
+            </div>
+          </div>
+          
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+          
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="pacman" id="play-pacman">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="pacman" id="code-pacman">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
+      <!-- 5. MAHJONG CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-mahjong" id="cab-mahjong">
+          <div class="cab-marquee">MAHJONG</div>
+          
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-mahjong">READY TO PLAY</div>
+          
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-mahjong" class="demo-canvas" width="130" height="140"></canvas>
+            
+            <div class="screen-intro">
+              <p class="tagline">Premium Mahjong</p>
+              <h2 class="description">4人通信対戦＆COM自動補填！<br>美しい3D牌で楽しむ本格麻雀。</h2>
+            </div>
+          </div>
+          
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+          
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="mahjong" id="play-mahjong">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="mahjong" id="code-mahjong">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
+      <!-- 6. GOMOKU CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-gomoku" id="cab-gomoku">
+          <div class="cab-marquee">GOMOKU</div>
+          
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-gomoku">READY TO PLAY</div>
+          
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-gomoku" class="demo-canvas" width="130" height="140"></canvas>
+            
+            <div class="screen-intro">
+              <p class="tagline">Gomoku Narabe</p>
+              <h2 class="description">5つの石を一直線に並べよ！<br>通信対戦＆COM対応の五目並べ。</h2>
+            </div>
+          </div>
+          
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+          
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="gomoku" id="play-gomoku">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="gomoku" id="code-gomoku">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
+      <!-- 7. REVERSI CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-reversi" id="cab-reversi">
+          <div class="cab-marquee">REVERSI</div>
+          
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-reversi">READY TO PLAY</div>
+          
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-reversi" class="demo-canvas" width="130" height="140"></canvas>
+            
+            <div class="screen-intro">
+              <p class="tagline">Classic Reversi</p>
+              <h2 class="description">挟んでひっくり返して大逆転！<br>オンライン対戦機能付きオセロ。</h2>
+            </div>
+          </div>
+          
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+          
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="reversi" id="play-reversi">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="reversi" id="code-reversi">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
+      <!-- 8. BLOKUS CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-blokus" id="cab-blokus">
+          <div class="cab-marquee">BLOKUS</div>
+          
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-blokus">READY TO PLAY</div>
+          
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-blokus" class="demo-canvas" width="130" height="140"></canvas>
+            
+            <div class="screen-intro">
+              <p class="tagline">Color Block Game</p>
+              <h2 class="description">角を接してピースを置け！<br>対戦＆COM対応のブロックス。</h2>
+            </div>
+          </div>
+          
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+          
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="blokus" id="play-blokus">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="blokus" id="code-blokus">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
+      <!-- 9. SHOGI CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-shogi" id="cab-shogi">
+          <div class="cab-marquee">SHOGI</div>
+          
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-shogi">READY TO PLAY</div>
+          
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-shogi" class="demo-canvas" width="130" height="140"></canvas>
+            
+            <div class="screen-intro">
+              <p class="tagline">Premium Shogi</p>
+              <h2 class="description">本格和モダン将棋！<br>対局＆COM対応、光るネオン駒で美しく対局。</h2>
+            </div>
+          </div>
+          
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+          
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="shogi" id="play-shogi">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="shogi" id="code-shogi">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
+      <!-- 10. MILITARY SHOGI CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-gunjin" id="cab-gunjin">
+          <div class="cab-marquee">MILITARY</div>
+          
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-gunjin">READY TO PLAY</div>
+          
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-gunjin" class="demo-canvas" width="130" height="140"></canvas>
+            
+            <div class="screen-intro">
+              <p class="tagline">Military Shogi</p>
+              <h2 class="description">非対称情報戦！<br>対人通信対戦＆COM対応、お互いの駒を隠し合う心理戦。</h2>
+            </div>
+          </div>
+          
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+          
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="gunjin" id="play-gunjin">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="gunjin" id="code-gunjin">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
+    </div>
+
+    <!-- DAILY LEADERBOARD SECTION -->
+    <section class="leaderboard-section">
+      <h2 class="leaderboard-title">🏆 DAILY HIGH SCORES (今日の記録)</h2>
+      <table class="score-table">
+        <thead>
+          <tr>
+            <th>RANK</th>
+            <th style="text-align: left;">PLAYER</th>
+            <th style="text-align: left;">GAME</th>
+            <th style="text-align: right;">SCORE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="rank-1">
+            <td>1ST</td>
+            <td style="text-align: left;">KEN</td>
+            <td class="player-game">SPACE INVADERS</td>
+            <td class="player-score">99,980</td>
+          </tr>
+          <tr class="rank-2">
+            <td>2ND</td>
+            <td style="text-align: left;">PAC</td>
+            <td class="player-game">PACMAN</td>
+            <td class="player-score">88,400</td>
+          </tr>
+          <tr class="rank-3">
+            <td>3RD</td>
+            <td style="text-align: left;">AAA</td>
+            <td class="player-game">TETRIS</td>
+            <td class="player-score">76,550</td>
+          </tr>
+          <tr class="rank-other">
+            <td>4TH</td>
+            <td style="text-align: left;">SLR</td>
+            <td class="player-game">HEAD-ON</td>
+            <td class="player-score">54,120</td>
+          </tr>
+          <tr class="rank-other">
+            <td>5TH</td>
+            <td style="text-align: left;">GAM</td>
+            <td class="player-game">PACMAN</td>
+            <td class="player-score">41,200</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- PLAY INSTRUCTIONS PANEL -->
+    <section class="instructions-section" id="instructions">
+      <h2 class="instructions-title">HOW TO PLAY (操作方法)</h2>
+      <div class="instructions-grid">
+        <!-- Invaders -->
+        <article class="instruction-item cab-invaders">
+          <h3>INVADERS</h3>
+          <ul>
+            <li><span>←</span> <span>→</span> : 左右移動</li>
+            <li><span>Space</span> : ミサイル発射</li>
+            <li>・トーチカに隠れて弾を防ごう</li>
+            <li>・時折出現するUFOは高得点！</li>
+          </ul>
+        </article>
+        <!-- Tetris -->
+        <article class="instruction-item cab-tetris">
+          <h3>TETRIS</h3>
+          <ul>
+            <li><span>←</span> <span>→</span> : 左右移動</li>
+            <li><span>↑</span> : ブロック回転</li>
+            <li><span>↓</span> : ソフトドロップ</li>
+            <li><span>Space</span> : ハードドロップ</li>
+            <li>・4ライン同時に消して「テトリス」を狙おう</li>
+          </ul>
+        </article>
+        <!-- Head-On -->
+        <article class="instruction-item cab-headon">
+          <h3>HEAD-ON</h3>
+          <ul>
+            <li><span>Space</span> / <span>Click</span> : 車線変更</li>
+            <li>・敵の車と正面衝突しないよう注意！</li>
+            <li>・コース上のすべての黄色いドットを回収しよう</li>
+            <li>・スピードアップボタンで敵を引き離せ</li>
+          </ul>
+        </article>
+        <!-- Pacman -->
+        <article class="instruction-item cab-pacman">
+          <h3>PACMAN</h3>
+          <ul>
+            <li><span>WASD</span> / <span>↑↓←→</span> : キーボード移動</li>
+            <li><span>Swipe</span> / <span>D-Pad</span> : スマホ操作対応</li>
+            <li>・パワーエサを食べるとゴーストを撃退可能！</li>
+            <li>・すべてのクッキーを食べ尽くせ！</li>
+          </ul>
+        </article>
+        <!-- Mahjong -->
+        <article class="instruction-item cab-mahjong">
+          <h3>MAHJONG</h3>
+          <ul>
+            <li><span>Click</span> : 牌を選択して打牌</li>
+            <li>・チー・ポン・カン・ロン・ツモは画面にボタン表示</li>
+            <li>・ルームIDで遠くの友人とリアルタイム通信対局</li>
+            <li>・人数不足時はCOM（AI）が自動補填されます</li>
+          </ul>
+        </article>
+        <!-- Gomoku -->
+        <article class="instruction-item cab-gomoku">
+          <h3>GOMOKU</h3>
+          <ul>
+            <li><span>Click</span> : 盤面をタップして石を置く</li>
+            <li>・黒か白の石を一直線に5つ並べたら勝利！</li>
+            <li>・ルームIDで友達とオンライン通信対戦が可能</li>
+            <li>・オフラインのCOM（AI）練習モードも搭載</li>
+          </ul>
+        </article>
+        <!-- Reversi -->
+        <article class="instruction-item cab-reversi">
+          <h3>REVERSI</h3>
+          <ul>
+            <li><span>Click</span> : 盤面をタップして石を置く</li>
+            <li>・自分の色の石で相手の石を挟むと反転します</li>
+            <li>・最終的に盤面で自分の石が多い方が勝利！</li>
+            <li>・オンライン通信対戦＆COM対戦に対応</li>
+          </ul>
+        </article>
+        <!-- Blokus -->
+        <article class="instruction-item cab-blokus">
+          <h3>BLOKUS</h3>
+          <ul>
+            <li><span>Click</span> : ピースを選択して盤面へクリック配置</li>
+            <li><span>R</span> / <span>Space</span> : ピースを回転</li>
+            <li><span>F</span> / <span>X</span> : ピースを反転</li>
+            <li>・自分の色のピースと角のみが接するように置こう！</li>
+            <li>・オンライン通信対戦＆COM対戦に対応</li>
+          </ul>
+        </article>
+        <!-- Shogi -->
+        <article class="instruction-item cab-shogi">
+          <h3>SHOGI</h3>
+          <ul>
+            <li><span>Click</span> / <span>Drag</span> : 駒を選択して移動・打つ</li>
+            <li>・成れる移動時には画面に成り・不成ボタンが表示されます</li>
+            <li>・ルームIDで遠くの友人とリアルタイム通信対局が可能</li>
+            <li>・難易度3段階のCOM対戦（Web Worker AI）を搭載</li>
+          </ul>
+        </article>
+        <!-- Gunjin Shogi -->
+        <article class="instruction-item cab-gunjin">
+          <h3>MILITARY SHOGI</h3>
+          <ul>
+            <li><span>Click</span> / <span>Tap</span> : 駒を選択して配置・移動</li>
+            <li>・戦闘時は審判が勝敗を自動判定（正体は非公開）</li>
+            <li>・ルームIDで友達と非対称情報の通信対局が可能</li>
+            <li>・不完全情報下の推測メモリを搭載したCOM（AI）対戦</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-content">
+      <p class="footer-text">THANK YOU FOR PLAYING!</p>
+      <p class="footer-author">
+        Created by <a href="https://github.com/kenken6291" target="_blank" rel="noopener noreferrer" id="author-github-link">kenken6291</a>
+      </p>
+      <p style="font-size: 0.65rem; color: #555; margin-top: 1rem;">
+        &copy; 2026 RETRO ARCADE HUB. ALL RIGHTS RESERVED.
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>
