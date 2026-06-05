@@ -439,6 +439,8 @@ main {
 .cab-shogi:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(255,230,0,0.75); }
 .cab-gunjin { border-color: var(--neon-green); box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 15px rgba(57,255,20,0.2); }
 .cab-gunjin:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(57,255,20,0.75); }
+.cab-uno { border-color: var(--neon-purple); box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 15px rgba(189,0,255,0.2); }
+.cab-uno:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(189,0,255,0.75); }
 
 /* Cabinet Top Marquee (Game Title Area) */
 .cab-marquee {
@@ -480,6 +482,7 @@ main {
 .cab-blokus .cab-marquee { color: var(--neon-blue); border-bottom: 4px solid var(--neon-blue); }
 .cab-shogi .cab-marquee { color: var(--neon-yellow); border-bottom: 4px solid var(--neon-yellow); }
 .cab-gunjin .cab-marquee { color: var(--neon-green); border-bottom: 4px solid var(--neon-green); }
+.cab-uno .cab-marquee { color: var(--neon-purple); border-bottom: 4px solid var(--neon-purple); }
 
 /* Credit Indicator (READY TO PLAY) inside Cabinet */
 .ready-indicator {

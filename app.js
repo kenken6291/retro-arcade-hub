@@ -46,6 +46,10 @@ const GAMES = {
   gunjin: {
     playUrl: `https://${GITHUB_USERNAME}.github.io/gunjin-shogi-premium/`,
     codeUrl: `https://github.com/${GITHUB_USERNAME}/gunjin-shogi-premium`
+  },
+  uno: {
+    playUrl: `https://${GITHUB_USERNAME}.github.io/uno-game/`,
+    codeUrl: `https://github.com/${GITHUB_USERNAME}/uno-game`
   }
 };
 
@@ -1393,6 +1397,158 @@ function initGunjinDemo(canvas) {
   loop();
 }
 
+// 11. UNO Demo
+function initUnoDemo(canvas) {
+  const ctx = canvas.getContext('2d');
+  let frame = 0;
+  const CARD_COLORS = ['#e53935', '#1565c0', '#2e7d32', '#f9a825'];
+  const CARD_NAMES  = ['RED', 'BLU', 'GRN', 'YEL'];
+  const VALUES = ['7', '3', '+2', 'SKIP', 'REV', '5', '9', 'W', '+4', '1'];
+  let topColor = 0;
+  let topValue = 0;
+  let handCounts = [7, 6, 7, 5];
+  let showUno = false;
+  let unoPlayer = 0;
+  let effectText = '';
+  let effectTimer = 0;
+
+  function drawCard(cx, cy, w, h, color, label, playable) {
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fillRect(cx + 2, cy + 3, w, h);
+    ctx.fillStyle = color;
+    ctx.fillRect(cx, cy, w, h);
+    ctx.strokeStyle = playable ? '#fff' : 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = playable ? 1.5 : 0.5;
+    ctx.strokeRect(cx + 1, cy + 1, w - 2, h - 2);
+    ctx.fillStyle = playable ? '#fff' : 'rgba(255,255,255,0.6)';
+    ctx.font = `bold ${label.length > 2 ? 6 : 9}px monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, cx + w / 2, cy + h / 2);
+  }
+
+  function drawCardBack(cx, cy, w, h) {
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.fillRect(cx + 2, cy + 2, w, h);
+    ctx.fillStyle = '#1a0533';
+    ctx.fillRect(cx, cy, w, h);
+    ctx.strokeStyle = '#bd00ff';
+    ctx.lineWidth = 0.8;
+    ctx.strokeRect(cx + 1, cy + 1, w - 2, h - 2);
+    ctx.fillStyle = '#ffe600';
+    ctx.font = 'bold 7px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('U', cx + w / 2, cy + h / 2);
+  }
+
+  function loop() {
+    frame++;
+
+    // Background
+    ctx.fillStyle = '#0a0515';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Table felt
+    ctx.fillStyle = '#0d1f10';
+    ctx.beginPath();
+    ctx.ellipse(65, 72, 52, 42, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#1a3a1f';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Top opponent hand (player 2)
+    const topN = Math.min(handCounts[1], 6);
+    for (let i = 0; i < topN; i++) drawCardBack(15 + i * 16, 4, 13, 19);
+    drawPixelText(ctx, `${handCounts[1]}`, 108, 13, '#aaa');
+
+    // Left opponent hand (player 1)
+    const leftN = Math.min(handCounts[3], 4);
+    for (let i = 0; i < leftN; i++) drawCardBack(2, 38 + i * 14, 17, 11);
+
+    // Right opponent hand (player 3)
+    const rightN = Math.min(handCounts[2], 4);
+    for (let i = 0; i < rightN; i++) drawCardBack(111, 38 + i * 14, 17, 11);
+
+    // Draw pile
+    drawCardBack(36, 50, 22, 34);
+    drawPixelText(ctx, 'DECK', 47, 90, '#555');
+
+    // Discard pile (top card)
+    const col = topColor === 4 ? '#333' : CARD_COLORS[topColor];
+    drawCard(72, 50, 22, 34, col, VALUES[topValue], true);
+
+    // Color indicator dot (for wild)
+    if (topColor < 4) {
+      ctx.fillStyle = CARD_COLORS[topColor];
+      ctx.beginPath();
+      ctx.arc(100, 57, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+
+    // Local player hand (player 0) - bottom
+    const myN = Math.min(handCounts[0], 5);
+    for (let i = 0; i < myN; i++) {
+      const isPlayable = (i === Math.floor(myN / 2));
+      const c = isPlayable ? CARD_COLORS[topColor % 4] : '#2a2a2a';
+      const v = isPlayable ? VALUES[(topValue + 1) % VALUES.length] : '?';
+      drawCard(13 + i * 21, 108, 18, 27, c, v, isPlayable);
+    }
+
+    // UNO! flash
+    if (showUno && Math.floor(frame / 7) % 2 === 0) {
+      ctx.fillStyle = '#bd00ff';
+      ctx.shadowColor = '#bd00ff';
+      ctx.shadowBlur = 10;
+      ctx.font = 'bold 13px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('UNO!', 65, 88);
+      ctx.shadowBlur = 0;
+    }
+
+    // Effect overlay (SKIP / +2 / REVERSE)
+    if (effectTimer > 0) {
+      effectTimer--;
+      if (Math.floor(frame / 5) % 2 === 0) {
+        ctx.fillStyle = '#ffe600';
+        ctx.font = 'bold 10px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(effectText, 65, 88);
+      }
+    }
+
+    // ONLINE badge
+    ctx.fillStyle = (frame % 60 < 30) ? '#39ff14' : '#1a4a1a';
+    ctx.beginPath();
+    ctx.arc(118, 132, 4, 0, Math.PI * 2);
+    ctx.fill();
+    drawPixelText(ctx, 'ONLINE', 70, 133, '#39ff14');
+
+    // Animate game state every 80 frames
+    if (frame % 80 === 0) {
+      topColor = (topColor + 1) % 4;
+      topValue = (topValue + 1) % VALUES.length;
+      const playedBy = Math.floor(frame / 80) % 4;
+      handCounts[playedBy] = Math.max(1, handCounts[playedBy] - 1);
+      showUno = handCounts.some(c => c === 1);
+      if (handCounts.every(c => c <= 1)) { handCounts = [7, 6, 7, 5]; showUno = false; }
+      const v = VALUES[topValue];
+      if (v === '+2' || v === '+4') { effectText = v === '+2' ? 'DRAW 2!' : 'WILD +4!'; effectTimer = 30; }
+      else if (v === 'SKIP') { effectText = 'SKIP!'; effectTimer = 30; }
+      else if (v === 'REV') { effectText = 'REVERSE!'; effectTimer = 30; }
+    }
+
+    demoAnimationIds.uno = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
 function initDemos() {
   const cInvaders = document.getElementById("canvas-invaders");
   const cTetris = document.getElementById("canvas-tetris");
@@ -1404,6 +1560,7 @@ function initDemos() {
   const cBlokus = document.getElementById("canvas-blokus");
   const cShogi = document.getElementById("canvas-shogi");
   const cGunjin = document.getElementById("canvas-gunjin");
+  const cUno = document.getElementById("canvas-uno");
 
   if (cInvaders) initInvadersDemo(cInvaders);
   if (cTetris) initTetrisDemo(cTetris);
@@ -1415,6 +1572,7 @@ function initDemos() {
   if (cBlokus) initBlokusDemo(cBlokus);
   if (cShogi) initShogiDemo(cShogi);
   if (cGunjin) initGunjinDemo(cGunjin);
+  if (cUno) initUnoDemo(cUno);
 }
 
 // --- HUD & INTERACTION LOGIC ---

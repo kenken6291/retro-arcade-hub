@@ -533,6 +533,49 @@
         </article>
       </div>
 
+      <!-- 11. UNO CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-uno" id="cab-uno">
+          <div class="cab-marquee">UNO</div>
+
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-uno">READY TO PLAY</div>
+
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-uno" class="demo-canvas" width="130" height="140"></canvas>
+
+            <div class="screen-intro">
+              <p class="tagline">Multiplayer Card</p>
+              <h2 class="description">4人通信対戦＆COM自動補填！<br>ネオンが光るUNOカードゲーム。</h2>
+            </div>
+          </div>
+
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="uno" id="play-uno">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="uno" id="code-uno">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
     </div>
 
     <!-- DAILY LEADERBOARD SECTION -->
@@ -686,6 +729,17 @@
             <li>・戦闘時は審判が勝敗を自動判定（正体は非公開）</li>
             <li>・ルームIDで友達と非対称情報の通信対局が可能</li>
             <li>・不完全情報下の推測メモリを搭載したCOM（AI）対戦</li>
+          </ul>
+        </article>
+        <!-- UNO -->
+        <article class="instruction-item cab-uno">
+          <h3>UNO</h3>
+          <ul>
+            <li><span>Click</span> : 手札のカードを選択して出す</li>
+            <li>・ワイルドカードプレイ時は場の色を指定</li>
+            <li>・手札が残り2枚でUNO宣言を忘れるとペナルティ2枚！</li>
+            <li>・ルームIDで最大4人の通信対戦が可能</li>
+            <li>・人数不足はCOM（AI）が自動補填されます</li>
           </ul>
         </article>
       </div>
