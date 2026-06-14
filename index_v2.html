@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RETRO ARCADE HUB</title>
+<style>
+/* ━━ CSS変数 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+:root{
+  --bg:#0a0a1a; --surface:#1a1a2e; --border:#16213e;
+  --green:#00ff88; --pink:#ff006e; --blue:#00d4ff; --gold:#ffd700;
+  --text:#e0e0e0; --dim:#666;
+  --font:'Courier New',Courier,monospace;
+  --r:8px; --t:0.28s ease;
+  --sg:0 0 10px #00ff88,0 0 22px #00ff8844;
+  --sp:0 0 10px #ff006e,0 0 22px #ff006e44;
+  --sb:0 0 10px #00d4ff,0 0 22px #00d4ff44;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden}
+body.logged-in{padding-top:48px}
+
+/* ━━ ログインオーバーレイ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+#login-overlay{
+  position:fixed;inset:0;z-index:9000;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;padding:1rem;
+  transition:opacity .6s,visibility .6s;
+}
+#login-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none}
+
+.cabinet{
+  width:100%;max-width:440px;background:var(--surface);
+  border:2px solid var(--green);border-radius:16px;
+  padding:2.4rem 2rem;box-shadow:var(--sg),inset 0 0 40px #00ff8806;
+  text-align:center;position:relative;overflow:hidden;
+}
+.cabinet::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,.015) 2px,rgba(0,255,136,.015) 4px);
+}
+
+.logo{font-size:clamp(1.3rem,5vw,2rem);color:var(--green);text-shadow:var(--sg);letter-spacing:.15em;animation:flicker 5s infinite}
+.logo-sub{font-size:.7rem;color:var(--dim);letter-spacing:.12em;margin-bottom:1.8rem}
+
+/* ━━ タブ切り替え（ログイン / お試し） ━━━━━━━━━━━━━━━━━━━━━ */
+.tabs{display:flex;gap:0;margin-bottom:1.6rem;border:1.5px solid var(--green);border-radius:var(--r);overflow:hidden}
+.tab-btn{
+  flex:1;background:transparent;border:none;color:var(--dim);
+  font-family:var(--font);font-size:.7rem;letter-spacing:.12em;
+  padding:.6rem .5rem;cursor:pointer;transition:all var(--t);
+}
+.tab-btn.active{background:var(--green);color:#000;font-weight:bold}
+.tab-btn:not(.active):hover{background:rgba(0,255,136,.1);color:var(--green)}
+
+/* ━━ フォームパネル ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.panel{display:none}.panel.active{display:block}
+
+.field-label{display:block;font-size:.65rem;color:var(--blue);letter-spacing:.15em;margin-bottom:.45rem;text-align:left}
+.field-input{
+  width:100%;background:#05050f;border:1.5px solid var(--green);border-radius:var(--r);
+  color:var(--green);font-family:var(--font);font-size:1rem;letter-spacing:.18em;
+  padding:.75rem 1rem;text-align:center;outline:none;transition:box-shadow var(--t),border-color var(--t);
+  margin-bottom:1rem;
+}
+.field-input:focus{box-shadow:var(--sg);border-color:var(--green)}
+.field-input::placeholder{color:#2a4a3a;letter-spacing:.08em}
+.field-input.nick{letter-spacing:.1em}  /* ニックネームは狭めに */
+
+.submit-btn{
+  width:100%;background:transparent;border:2px solid var(--green);border-radius:var(--r);
+  color:var(--green);font-family:var(--font);font-size:.95rem;letter-spacing:.2em;
+  padding:.85rem 1rem;cursor:pointer;position:relative;overflow:hidden;transition:all var(--t);
+}
+.submit-btn::before{content:'';position:absolute;inset:0;background:var(--green);opacity:0;transition:opacity var(--t)}
+.submit-btn:hover::before,.submit-btn:active::before{opacity:.1}
+.submit-btn:hover{box-shadow:var(--sg)}
+.submit-btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* お試しボタン色 */
+.submit-btn.trial{border-color:var(--gold);color:var(--gold)}
+.submit-btn.trial::before{background:var(--gold)}
+.submit-btn.trial:hover{box-shadow:0 0 10px var(--gold),0 0 22px #ffd70044}
+
+.msg{margin-top:.9rem;font-size:.72rem;min-height:1.1em;letter-spacing:.05em;line-height:1.5}
+.msg.err{color:var(--pink)}.msg.ok{color:var(--green)}
+
+.spinner{
+  display:none;width:20px;height:20px;border:2px solid #223;border-top-color:var(--green);
+  border-radius:50%;animation:spin .8s linear infinite;margin:.7rem auto 0;
+}
+.spinner.on{display:block}
+
+/* お試し用インフォ */
+.trial-info{
+  background:#0a1505;border:1px solid #2a5a2a;border-radius:var(--r);
+  padding:.8rem;margin-bottom:1rem;font-size:.68rem;color:#88cc88;
+  line-height:1.8;letter-spacing:.04em;text-align:left;
+}
+.trial-info strong{color:var(--gold)}
+
+/* ━━ HUDバー ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+#hud{
+  position:fixed;top:0;left:0;right:0;z-index:8000;
+  background:rgba(10,10,26,.97);border-bottom:1px solid var(--green);
+  padding:.45rem 1.2rem;display:none;align-items:center;justify-content:space-between;
+  gap:.5rem;backdrop-filter:blur(8px);flex-wrap:wrap;
+}
+#hud.on{display:flex}
+.hb{display:flex;align-items:center;gap:.4rem;font-size:clamp(.58rem,2.2vw,.75rem);letter-spacing:.07em}
+.hl{color:var(--dim)}.hv{color:var(--green);font-weight:bold}
+.hc{color:var(--gold);font-size:clamp(.8rem,3vw,1rem);animation:pulse 2.5s infinite}
+.hn{color:var(--blue)} /* ニックネーム */
+.badge-type{
+  font-size:.55rem;padding:.1rem .4rem;border-radius:3px;
+  font-weight:bold;letter-spacing:.06em;
+}
+.type-trial{background:#332200;color:var(--gold);border:1px solid var(--gold)}
+.type-reg  {background:#002211;color:var(--green);border:1px solid var(--green)}
+
+.rank-badge{padding:.1rem .45rem;border-radius:3px;font-size:.6rem;font-weight:bold;letter-spacing:.08em}
+.rank-BRONZE  {background:#cd7f32;color:#000}
+.rank-SILVER  {background:#c0c0c0;color:#000}
+.rank-GOLD    {background:var(--gold);color:#000}
+.rank-PLATINUM{background:var(--blue);color:#000}
+
+.logout-btn{
+  background:transparent;border:1px solid var(--pink);border-radius:4px;
+  color:var(--pink);font-family:var(--font);font-size:.6rem;
+  padding:.22rem .6rem;cursor:pointer;letter-spacing:.07em;transition:all var(--t);
+}
+.logout-btn:hover{background:rgba(255,0,110,.14);box-shadow:var(--sp)}
+
+/* ━━ クレジット不足モーダル ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+#cr-modal{
+  position:fixed;inset:0;z-index:8500;background:rgba(0,0,0,.87);
+  display:none;align-items:center;justify-content:center;padding:1rem;
+}
+#cr-modal.on{display:flex}
+.modal-box{
+  background:var(--surface);border:2px solid var(--pink);border-radius:12px;
+  padding:2rem;max-width:340px;width:100%;text-align:center;box-shadow:var(--sp);
+}
+.modal-t{font-size:1rem;color:var(--pink);margin-bottom:.7rem;letter-spacing:.1em}
+.modal-b{font-size:.75rem;color:var(--dim);line-height:1.9;margin-bottom:1.1rem}
+.modal-close{
+  background:transparent;border:1.5px solid var(--pink);border-radius:var(--r);
+  color:var(--pink);font-family:var(--font);padding:.55rem 1.4rem;
+  cursor:pointer;font-size:.75rem;letter-spacing:.1em;transition:all var(--t);
+}
+.modal-close:hover{background:rgba(255,0,110,.14)}
+
+/* ━━ 管理者パネル ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+#admin-panel{
+  position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.97);
+  display:none;flex-direction:column;padding:1rem;overflow-y:auto;
+}
+#admin-panel.on{display:flex}
+.adm-hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;
+  border-bottom:1px solid var(--blue);padding-bottom:.8rem;margin-bottom:1.2rem;}
+.adm-title{font-size:clamp(.85rem,3vw,1.1rem);color:var(--blue);letter-spacing:.15em}
+.adm-close{background:transparent;border:1.5px solid var(--pink);border-radius:4px;
+  color:var(--pink);font-family:var(--font);padding:.35rem .75rem;cursor:pointer;font-size:.72rem}
+
+.sec{background:var(--surface);border:1px solid #1e2a3a;border-radius:var(--r);padding:1.1rem;margin-bottom:1.1rem}
+.sec-t{font-size:.68rem;color:var(--blue);letter-spacing:.15em;margin-bottom:.9rem;
+  border-bottom:1px solid #1e2a3a;padding-bottom:.45rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:.7rem;margin-bottom:.75rem}
+.fl label{display:block;font-size:.58rem;color:var(--dim);letter-spacing:.1em;margin-bottom:.28rem}
+.fl input,.fl select{
+  width:100%;background:#08080e;border:1px solid #2a3a4a;border-radius:4px;
+  color:var(--text);font-family:var(--font);font-size:.78rem;padding:.45rem .6rem;
+  outline:none;transition:border-color var(--t);
+}
+.fl input:focus,.fl select:focus{border-color:var(--blue)}
+.fl select option{background:#1a1a2e}
+.fl.full{grid-column:1/-1}
+
+.ab{
+  background:transparent;border:1.5px solid var(--green);border-radius:var(--r);
+  color:var(--green);font-family:var(--font);font-size:.72rem;
+  padding:.5rem .95rem;cursor:pointer;letter-spacing:.07em;
+  transition:all var(--t);margin-right:.45rem;margin-bottom:.4rem;
+}
+.ab:hover{background:rgba(0,255,136,.1);box-shadow:var(--sg)}
+.ab.danger{border-color:var(--pink);color:var(--pink)}
+.ab.danger:hover{background:rgba(255,0,110,.1);box-shadow:var(--sp)}
+
+.am{font-size:.7rem;min-height:1.1em;margin-top:.45rem;letter-spacing:.04em}
+.am.ok{color:var(--green)}.am.err{color:var(--pink)}
+
+.tbl-wrap{overflow-x:auto;margin-top:.7rem}
+.tbl{width:100%;border-collapse:collapse;font-size:.68rem;white-space:nowrap}
+.tbl th{background:#0d1117;color:var(--blue);padding:.45rem .6rem;text-align:left;letter-spacing:.07em;border-bottom:1px solid #1e2a3a}
+.tbl td{padding:.4rem .6rem;border-bottom:1px solid #111520;color:var(--text)}
+.tbl tr:hover td{background:rgba(0,212,255,.04)}
+.tbl .cr-col{color:var(--gold)}
+.tbtn{background:transparent;border:1px solid currentColor;border-radius:3px;
+  font-family:var(--font);font-size:.6rem;padding:.18rem .42rem;cursor:pointer;transition:all var(--t);margin-right:.25rem}
+.tbtn.edit{color:var(--green)}.tbtn.edit:hover{background:rgba(0,255,136,.12)}
+.tbtn.del {color:var(--pink)} .tbtn.del:hover {background:rgba(255,0,110,.12)}
+.bs{display:inline-block;padding:.08rem .38rem;border-radius:3px;font-size:.6rem;font-weight:bold}
+.bs.on {background:#002211;color:var(--green);border:1px solid var(--green)}
+.bs.off{background:#220011;color:var(--pink); border:1px solid var(--pink)}
+.bt{display:inline-block;padding:.08rem .38rem;border-radius:3px;font-size:.6rem}
+.bt.t{background:#332200;color:var(--gold);border:1px solid #664400}
+.bt.r{background:#002211;color:var(--green);border:1px solid #004422}
+
+/* ━━ アニメーション ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes flicker{0%,94%,96%,100%{opacity:1}95%{opacity:.6}}
+@keyframes pulse{0%,100%{text-shadow:0 0 6px var(--gold)}50%{text-shadow:0 0 18px var(--gold),0 0 36px #ffd70077}}
+
+/* ━━ レスポンシブ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@media(max-width:480px){
+  .cabinet{padding:1.8rem 1.1rem}
+  .grid{grid-template-columns:1fr 1fr}
+  .hb:nth-child(n+4){display:none}
+}
+@media(min-width:768px){#hud{padding:.55rem 2rem}}
+</style>
+</head>
+<body>
+
+<!-- ① ログイン / お試し登録 オーバーレイ -->
+<div id="login-overlay">
+  <div class="cabinet">
+    <div class="logo">🕹 RETRO ARCADE HUB</div>
+    <div class="logo-sub">MEMBER ACCESS SYSTEM v2</div>
+
+    <!-- タブ -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="login">▶ 会員ログイン</button>
+      <button class="tab-btn"        data-tab="trial">🎮 お試しプレイ</button>
+    </div>
+
+    <!-- ログインパネル -->
+    <div class="panel active" id="panel-login">
+      <label class="field-label">MEMBER ID / 会員番号</label>
+      <input id="member-id" class="field-input" type="text" maxlength="20"
+             placeholder="例: M0001" autocomplete="off" spellcheck="false">
+      <button id="login-btn" class="submit-btn">INSERT COIN ▶ LOGIN</button>
+      <div id="login-msg" class="msg"></div>
+      <div id="login-sp"  class="spinner"></div>
+    </div>
+
+    <!-- お試しパネル -->
+    <div class="panel" id="panel-trial">
+      <div class="trial-info">
+        会員登録不要でその場からプレイできます！<br>
+        <strong>🎁 初回 50クレジット</strong> をプレゼント✨<br>
+        ニックネームを入力して今すぐスタート！
+      </div>
+      <label class="field-label">NICKNAME / ニックネーム（12文字以内）</label>
+      <input id="trial-nick" class="field-input nick" type="text" maxlength="12"
+             placeholder="例: アーケーダー" autocomplete="off">
+      <button id="trial-btn" class="submit-btn trial">🎮 今すぐ START!</button>
+      <div id="trial-msg" class="msg"></div>
+      <div id="trial-sp"  class="spinner"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ② HUDバー -->
+<div id="hud">
+  <div class="hb">
+    <span class="hl">PLAYER:</span>
+    <span class="hv hn" id="hud-nick">---</span>
+    <span class="rank-badge" id="hud-rank">---</span>
+    <span class="badge-type" id="hud-type"></span>
+  </div>
+  <div class="hb">
+    <span class="hl">ID:</span>
+    <span class="hv" id="hud-id">---</span>
+  </div>
+  <div class="hb">
+    <span class="hl">CREDIT</span>
+    <span class="hc" id="hud-cr">00</span>
+  </div>
+  <div class="hb">
+    <button class="logout-btn" id="logout-btn">LOGOUT</button>
+  </div>
+</div>
+
+<!-- ③ クレジット不足モーダル -->
+<div id="cr-modal">
+  <div class="modal-box">
+    <div class="modal-t">⚠ CREDIT REQUIRED</div>
+    <div class="modal-b">
+      クレジットが不足しています。<br>
+      管理者にクレジット追加をご依頼ください。<br><br>
+      現在のクレジット: <span id="modal-cr" style="color:var(--gold)">0</span>
+    </div>
+    <button class="modal-close" id="modal-close">CLOSE</button>
+  </div>
+</div>
+
+<!-- ④ 管理者パネル -->
+<div id="admin-panel">
+  <div class="adm-hdr">
+    <div class="adm-title">⚙ ADMIN CONSOLE</div>
+    <button class="adm-close" id="adm-close">✕ 閉じる</button>
+  </div>
+
+  <!-- 管理者ログイン -->
+  <div id="adm-auth" class="sec">
+    <div class="sec-t">▶ 管理者認証</div>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end">
+      <div class="fl" style="flex:1;min-width:150px"><label>パスワード</label><input type="password" id="adm-pw"></div>
+      <button class="ab" id="adm-auth-btn">認証</button>
+    </div>
+    <div class="am" id="adm-auth-msg"></div>
+  </div>
+
+  <div id="adm-main" style="display:none">
+
+    <!-- 会員追加 -->
+    <div class="sec">
+      <div class="sec-t">▶ 会員追加</div>
+      <div class="grid">
+        <div class="fl"><label>会員番号 *</label><input type="text" id="add-id" placeholder="例: M0010"></div>
+        <div class="fl"><label>会員名 *</label><input type="text" id="add-name" placeholder="例: 山田太郎"></div>
+        <div class="fl"><label>ニックネーム</label><input type="text" id="add-nick" placeholder="例: タロウ"></div>
+        <div class="fl"><label>クレジット</label><input type="number" id="add-cr" value="0" min="0"></div>
+        <div class="fl"><label>ランク</label>
+          <select id="add-rank"><option>BRONZE</option><option>SILVER</option><option>GOLD</option><option>PLATINUM</option></select>
+        </div>
+        <div class="fl"><label>種別</label>
+          <select id="add-type"><option value="正規">正規</option><option value="お試し">お試し</option></select>
+        </div>
+        <div class="fl"><label>ステータス</label>
+          <select id="add-st"><option>有効</option><option>無効</option></select>
+        </div>
+        <div class="fl"><label>メール</label><input type="email" id="add-mail" placeholder="任意"></div>
+        <div class="fl full"><label>メモ</label><input type="text" id="add-memo" placeholder="任意"></div>
+      </div>
+      <button class="ab" id="adm-add">▶ 追加</button>
+      <div class="am" id="add-msg"></div>
+    </div>
+
+    <!-- クレジット操作 -->
+    <div class="sec">
+      <div class="sec-t">▶ クレジット操作</div>
+      <div class="grid">
+        <div class="fl"><label>会員番号 *</label><input type="text" id="cr-id" placeholder="M0001"></div>
+        <div class="fl"><label>金額</label><input type="number" id="cr-amt" value="10" min="0"></div>
+        <div class="fl"><label>操作</label>
+          <select id="cr-mode"><option value="add">加算 (+)</option><option value="subtract">減算 (-)</option><option value="set">設定 (=)</option></select>
+        </div>
+      </div>
+      <button class="ab" id="adm-cr">▶ 更新</button>
+      <div class="am" id="cr-msg"></div>
+    </div>
+
+    <!-- 会員一覧 -->
+    <div class="sec">
+      <div class="sec-t">▶ 会員一覧</div>
+      <button class="ab" id="adm-list">▶ 一覧を更新</button>
+      <div class="am" id="list-msg"></div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr>
+            <th>会員番号</th><th>会員名</th><th>Nick</th><th>CR</th>
+            <th>種別</th><th>ステータス</th><th>ランク</th><th>最終ログイン</th><th>操作</th>
+          </tr></thead>
+          <tbody id="tbl-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 編集フォーム -->
+    <div class="sec" id="edit-sec" style="display:none">
+      <div class="sec-t">▶ 会員編集</div>
+      <div class="grid">
+        <div class="fl"><label>会員番号（変更不可）</label><input type="text" id="edit-id" readonly style="opacity:.45"></div>
+        <div class="fl"><label>会員名</label><input type="text" id="edit-name"></div>
+        <div class="fl"><label>ニックネーム</label><input type="text" id="edit-nick"></div>
+        <div class="fl"><label>クレジット</label><input type="number" id="edit-cr" min="0"></div>
+        <div class="fl"><label>ランク</label>
+          <select id="edit-rank"><option>BRONZE</option><option>SILVER</option><option>GOLD</option><option>PLATINUM</option></select>
+        </div>
+        <div class="fl"><label>種別</label>
+          <select id="edit-type"><option value="正規">正規</option><option value="お試し">お試し</option></select>
+        </div>
+        <div class="fl"><label>ステータス</label>
+          <select id="edit-st"><option>有効</option><option>無効</option></select>
+        </div>
+        <div class="fl"><label>メール</label><input type="email" id="edit-mail"></div>
+        <div class="fl full"><label>メモ</label><input type="text" id="edit-memo"></div>
+      </div>
+      <button class="ab" id="adm-save">▶ 保存</button>
+      <button class="ab" style="border-color:#333;color:#555" id="adm-cancel">キャンセル</button>
+      <div class="am" id="edit-msg"></div>
+    </div>
+
+  </div><!-- /adm-main -->
+</div><!-- /admin-panel -->
+
+<!-- ⑤ メインコンテンツ（既存サイトのゲーム一覧と統合する場所） -->
+<div id="main-content" style="max-width:900px;margin:2rem auto;padding:1rem;text-align:center;display:none">
+  <p style="color:#333;font-size:.7rem;letter-spacing:.1em">
+    ↑ 既存の index.html のゲームコンテンツをここに統合してください。<br>
+    ログイン後にこのエリアが表示されます。
+  </p>
+  <button id="open-adm"
+    style="margin-top:2rem;background:transparent;border:1px solid #1a2030;border-radius:4px;
+           color:#2a3040;font-family:monospace;font-size:.6rem;padding:.28rem .7rem;cursor:pointer;letter-spacing:.08em">
+    ADMIN
+  </button>
+</div>
+
+<script>
+// ================================================================
+// RETRO ARCADE HUB - 会員管理 JS v2
+// ※ GAS_URL を実際のデプロイURLに変更してください
+// ================================================================
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyS2YbMuVF8GMuELaYh5YvyszRlcWU5MBxlEMFMX9CsT2-EbX6a6cs-_xiRsheLmj_mSw/exec';
+
+const App = { memberId:null, nickname:null, credit:0, rank:'BRONZE', memberType:'正規', adminToken:null };
+
+// ── GAS通信 ───────────────────────────────────────────────────
+async function api(payload) {
+  const r = await fetch(GAS_URL, {
+    method:'POST', redirect:'follow',
+    headers:{'Content-Type':'text/plain'},
+    body: JSON.stringify(payload)
+  });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+// ── タブ切り替え ──────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ── ログイン ──────────────────────────────────────────────────
+const loginBtn = document.getElementById('login-btn');
+const loginMid = document.getElementById('member-id');
+
+async function doLogin() {
+  const id = loginMid.value.trim();
+  if (!id) { setMsg('login', '会員番号を入力してください。', 'err'); return; }
+  setLoading('login', true);
+  setMsg('login', '認証中...', '');
+  try {
+    const r = await api({ action:'login', memberId:id });
+    if (r.success) {
+      setMsg('login', r.message, 'ok');
+      setTimeout(() => onLogin(r), 700);
+    } else { setMsg('login', r.message, 'err'); loginMid.select(); }
+  } catch(e) { setMsg('login', '通信エラーが発生しました。', 'err'); }
+  finally { setLoading('login', false); }
+}
+loginBtn.addEventListener('click', doLogin);
+loginMid.addEventListener('keydown', e => e.key==='Enter' && doLogin());
+
+// ── お試し登録 ────────────────────────────────────────────────
+const trialBtn  = document.getElementById('trial-btn');
+const trialNick = document.getElementById('trial-nick');
+
+async function doTrial() {
+  const nick = trialNick.value.trim();
+  if (!nick) { setMsg('trial', 'ニックネームを入力してください。', 'err'); return; }
+  setLoading('trial', true);
+  setMsg('trial', '登録中...', '');
+  try {
+    const r = await api({ action:'trialRegister', nickname:nick });
+    if (r.success) {
+      setMsg('trial', r.message, 'ok');
+      setTimeout(() => onLogin(r), 1200);
+    } else { setMsg('trial', r.message, 'err'); }
+  } catch(e) { setMsg('trial', '通信エラーが発生しました。', 'err'); }
+  finally { setLoading('trial', false); }
+}
+trialBtn.addEventListener('click', doTrial);
+trialNick.addEventListener('keydown', e => e.key==='Enter' && doTrial());
+
+// ── ログイン後共通処理 ────────────────────────────────────────
+function onLogin(r) {
+  App.memberId   = r.memberId;
+  App.nickname   = r.nickname   || r.memberName;
+  App.credit     = r.credit;
+  App.rank       = r.rank;
+  App.memberType = r.memberType || '正規';
+
+  // HUD更新
+  document.getElementById('hud-nick').textContent = App.nickname;
+  document.getElementById('hud-id').textContent   = App.memberId;
+  document.getElementById('hud-cr').textContent   = fmt(App.credit);
+  const rankEl = document.getElementById('hud-rank');
+  rankEl.textContent = App.rank;
+  rankEl.className   = 'rank-badge rank-' + App.rank;
+  const typeEl = document.getElementById('hud-type');
+  typeEl.textContent = App.memberType;
+  typeEl.className   = 'badge-type ' + (App.memberType==='お試し' ? 'type-trial' : 'type-reg');
+
+  document.getElementById('hud').classList.add('on');
+  document.getElementById('login-overlay').classList.add('hidden');
+  document.getElementById('main-content').style.display = 'block';
+  document.body.classList.add('logged-in');
+}
+
+// ── ログアウト ────────────────────────────────────────────────
+document.getElementById('logout-btn').addEventListener('click', () => {
+  if (!confirm('ログアウトしますか？')) return;
+  Object.assign(App, { memberId:null, nickname:null, credit:0, rank:'BRONZE', adminToken:null });
+  loginMid.value = ''; trialNick.value = '';
+  document.getElementById('hud').classList.remove('on');
+  document.getElementById('main-content').style.display = 'none';
+  document.body.classList.remove('logged-in');
+  document.getElementById('login-overlay').classList.remove('hidden');
+  setMsg('login','',''); setMsg('trial','','');
+});
+
+// ── クレジット使用（外部からも呼べる） ───────────────────────
+window.useCredit = async function(gameName = 'ゲーム', amount = 1) {
+  if (!App.memberId) { alert('ログインが必要です。'); return false; }
+  if (App.credit < amount) {
+    document.getElementById('modal-cr').textContent = App.credit;
+    document.getElementById('cr-modal').classList.add('on');
+    return false;
+  }
+  try {
+    const r = await api({ action:'useCredit', memberId:App.memberId, gameName, amount });
+    if (r.success) {
+      App.credit = r.credit;
+      document.getElementById('hud-cr').textContent = fmt(App.credit);
+      return true;
+    }
+    return false;
+  } catch(e) { return false; }
+};
+document.getElementById('modal-close').addEventListener('click', () => {
+  document.getElementById('cr-modal').classList.remove('on');
+});
+
+// ── 管理者パネル ──────────────────────────────────────────────
+document.getElementById('open-adm').addEventListener('click', () => document.getElementById('admin-panel').classList.add('on'));
+document.getElementById('adm-close').addEventListener('click', () => document.getElementById('admin-panel').classList.remove('on'));
+
+document.getElementById('adm-auth-btn').addEventListener('click', async () => {
+  const m = am('adm-auth');
+  try {
+    const r = await api({ action:'adminLogin', password:document.getElementById('adm-pw').value });
+    if (r.success) {
+      App.adminToken = r.token;
+      document.getElementById('adm-auth').style.display = 'none';
+      document.getElementById('adm-main').style.display = 'block';
+      loadList();
+    } else m.set(r.message, 'err');
+  } catch(e) { m.set('通信エラー', 'err'); }
+});
+
+document.getElementById('adm-add').addEventListener('click', async () => {
+  const m = am('add');
+  try {
+    const r = await api({
+      action:'adminAddMember', token:App.adminToken,
+      memberId:   v('add-id'),   memberName: v('add-name'),
+      nickname:   v('add-nick'), credit:     v('add-cr'),
+      rank:       v('add-rank'), memberType: v('add-type'),
+      status:     v('add-st'),   email:      v('add-mail'),
+      memo:       v('add-memo'),
+    });
+    m.set(r.message, r.success ? 'ok' : 'err');
+    if (r.success) loadList();
+  } catch(e) { m.set('通信エラー','err'); }
+});
+
+document.getElementById('adm-cr').addEventListener('click', async () => {
+  const m = am('cr');
+  try {
+    const r = await api({ action:'adminUpdateCredit', token:App.adminToken,
+      memberId:v('cr-id'), amount:v('cr-amt'), mode:v('cr-mode') });
+    m.set(r.message + (r.credit!=null ? '（残:'+r.credit+'）':''), r.success?'ok':'err');
+    if (r.success) loadList();
+  } catch(e) { m.set('通信エラー','err'); }
+});
+
+document.getElementById('adm-list').addEventListener('click', loadList);
+
+async function loadList() {
+  const m = am('list');
+  m.set('読み込み中...','');
+  try {
+    const r = await api({ action:'adminGetMembers', token:App.adminToken });
+    if (!r.success) { m.set(r.message,'err'); return; }
+    const tbody = document.getElementById('tbl-body');
+    tbody.innerHTML = '';
+    r.members.forEach(mem => {
+      const tr = document.createElement('tr');
+      const md = encodeURIComponent(JSON.stringify(mem));
+      tr.innerHTML = `
+        <td>${mem.memberId}</td>
+        <td>${mem.memberName}</td>
+        <td style="color:var(--blue)">${mem.nickname||'—'}</td>
+        <td class="cr-col">${mem.credit}</td>
+        <td><span class="bt ${mem.memberType==='お試し'?'t':'r'}">${mem.memberType||'正規'}</span></td>
+        <td><span class="bs ${mem.status==='有効'?'on':'off'}">${mem.status}</span></td>
+        <td><span class="rank-badge rank-${mem.rank}" style="font-size:.58rem">${mem.rank}</span></td>
+        <td style="color:var(--dim);font-size:.62rem">${mem.lastLogin||'—'}</td>
+        <td>
+          <button class="tbtn edit" onclick="openEdit(decodeURIComponent('${md}'))">編集</button>
+          <button class="tbtn del"  onclick="delMember('${mem.memberId}')">削除</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+    m.set(r.members.length + '件', 'ok');
+  } catch(e) { m.set('通信エラー','err'); }
+}
+
+window.openEdit = function(jsonStr) {
+  const m = JSON.parse(jsonStr);
+  document.getElementById('edit-sec').style.display = 'block';
+  sv('edit-id',   m.memberId);   sv('edit-name', m.memberName);
+  sv('edit-nick', m.nickname);   sv('edit-cr',   m.credit);
+  sv('edit-rank', m.rank);       sv('edit-type', m.memberType||'正規');
+  sv('edit-st',   m.status);     sv('edit-mail', m.email||'');
+  sv('edit-memo', m.memo||'');
+  document.getElementById('edit-sec').scrollIntoView({behavior:'smooth'});
+};
+
+document.getElementById('adm-save').addEventListener('click', async () => {
+  const m = am('edit');
+  try {
+    const r = await api({
+      action:'adminUpdateMember', token:App.adminToken,
+      memberId:v('edit-id'), memberName:v('edit-name'), nickname:v('edit-nick'),
+      credit:v('edit-cr'),   rank:v('edit-rank'),       memberType:v('edit-type'),
+      status:v('edit-st'),   email:v('edit-mail'),       memo:v('edit-memo'),
+    });
+    m.set(r.message, r.success?'ok':'err');
+    if (r.success) { loadList(); document.getElementById('edit-sec').style.display='none'; }
+  } catch(e) { m.set('通信エラー','err'); }
+});
+
+document.getElementById('adm-cancel').addEventListener('click', () => {
+  document.getElementById('edit-sec').style.display='none';
+});
+
+window.delMember = async function(id) {
+  if (!confirm(id + ' を削除しますか？')) return;
+  const m = am('list');
+  try {
+    const r = await api({ action:'adminDeleteMember', token:App.adminToken, memberId:id });
+    m.set(r.message, r.success?'ok':'err');
+    if (r.success) loadList();
+  } catch(e) { m.set('通信エラー','err'); }
+};
+
+// ── ユーティリティ ────────────────────────────────────────────
+const v  = id => document.getElementById(id)?.value ?? '';
+const sv = (id, val) => { const el = document.getElementById(id); if(el) el.value = val ?? ''; };
+const fmt = n => String(n).padStart(2,'0');
+
+function am(prefix) {
+  const el = document.getElementById(prefix + '-msg');
+  return { set(t,cls){ el.textContent=t; el.className='am'+(cls?' '+cls:''); } };
+}
+
+function setMsg(prefix, txt, cls) {
+  const el = document.getElementById(prefix + '-msg');
+  el.textContent = txt; el.className = 'msg' + (cls ? ' ' + cls : '');
+}
+function setLoading(prefix, on) {
+  const btn = document.getElementById(prefix + '-btn');
+  const sp  = document.getElementById(prefix + '-sp');
+  btn.disabled = on;
+  sp.className = 'spinner' + (on ? ' on' : '');
+}
+</script>
+</body>
+</html>
