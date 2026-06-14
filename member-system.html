@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RETRO ARCADE HUB - Member System</title>
+<!-- ============================================================
+  RETRO ARCADE HUB - 会員管理システム フロントエンド
+  このファイルを既存のindex.htmlと統合するか、
+  GAS WebアプリのHTMLとして使用してください。
+  ============================================================ -->
+<style>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CSS変数・基本設定
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+:root {
+  --color-bg:        #0a0a1a;
+  --color-surface:   #1a1a2e;
+  --color-border:    #16213e;
+  --color-neon-green:#00ff88;
+  --color-neon-pink: #ff006e;
+  --color-neon-blue: #00d4ff;
+  --color-neon-gold: #ffd700;
+  --color-text:      #e0e0e0;
+  --color-dim:       #888;
+  --font-pixel:      'Courier New', Courier, monospace;
+  --radius:          8px;
+  --transition:      0.3s ease;
+  --shadow-neon-green: 0 0 10px #00ff88, 0 0 20px #00ff8855;
+  --shadow-neon-pink:  0 0 10px #ff006e, 0 0 20px #ff006e55;
+  --shadow-neon-blue:  0 0 10px #00d4ff, 0 0 20px #00d4ff55;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-pixel);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ログイン画面オーバーレイ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+#login-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  transition: opacity 0.6s ease, visibility 0.6s;
+}
+
+#login-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.login-cabinet {
+  width: 100%;
+  max-width: 420px;
+  background: var(--color-surface);
+  border: 2px solid var(--color-neon-green);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  box-shadow: var(--shadow-neon-green), inset 0 0 30px #00ff8808;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* スキャンライン演出 */
+.login-cabinet::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,255,136,0.02) 2px,
+    rgba(0,255,136,0.02) 4px
+  );
+  pointer-events: none;
+}
+
+.login-logo {
+  font-size: clamp(1.2rem, 5vw, 1.8rem);
+  color: var(--color-neon-green);
+  text-shadow: var(--shadow-neon-green);
+  letter-spacing: 0.15em;
+  margin-bottom: 0.4rem;
+  animation: flicker 4s infinite;
+}
+
+.login-sub {
+  font-size: 0.75rem;
+  color: var(--color-dim);
+  letter-spacing: 0.1em;
+  margin-bottom: 2rem;
+}
+
+.login-label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--color-neon-blue);
+  letter-spacing: 0.15em;
+  margin-bottom: 0.6rem;
+  text-align: left;
+}
+
+.login-input {
+  width: 100%;
+  background: #0a0a1a;
+  border: 1.5px solid var(--color-neon-green);
+  border-radius: var(--radius);
+  color: var(--color-neon-green);
+  font-family: var(--font-pixel);
+  font-size: 1.1rem;
+  letter-spacing: 0.2em;
+  padding: 0.8rem 1rem;
+  text-align: center;
+  outline: none;
+  transition: box-shadow var(--transition), border-color var(--transition);
+  margin-bottom: 1.2rem;
+}
+
+.login-input:focus {
+  box-shadow: var(--shadow-neon-green);
+  border-color: #00ff88cc;
+}
+
+.login-input::placeholder { color: #336644; letter-spacing: 0.1em; }
+
+.login-btn {
+  width: 100%;
+  background: transparent;
+  border: 2px solid var(--color-neon-green);
+  border-radius: var(--radius);
+  color: var(--color-neon-green);
+  font-family: var(--font-pixel);
+  font-size: 1rem;
+  letter-spacing: 0.2em;
+  padding: 0.9rem 1rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-neon-green);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.login-btn:hover::before, .login-btn:active::before { opacity: 0.12; }
+.login-btn:hover { box-shadow: var(--shadow-neon-green); }
+.login-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.login-msg {
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  min-height: 1.2em;
+  letter-spacing: 0.05em;
+  transition: color var(--transition);
+}
+.login-msg.error   { color: var(--color-neon-pink); }
+.login-msg.success { color: var(--color-neon-green); }
+
+.login-spinner {
+  display: none;
+  width: 20px; height: 20px;
+  border: 2px solid #334;
+  border-top-color: var(--color-neon-green);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0.8rem auto 0;
+}
+.login-spinner.active { display: block; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   HUD バー（ログイン後に表示）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+#member-hud {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 8000;
+  background: rgba(10,10,26,0.96);
+  border-bottom: 1px solid var(--color-neon-green);
+  padding: 0.5rem 1rem;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  backdrop-filter: blur(8px);
+  flex-wrap: wrap;
+}
+
+#member-hud.visible { display: flex; }
+
+.hud-block {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: clamp(0.6rem, 2.5vw, 0.78rem);
+  letter-spacing: 0.08em;
+}
+
+.hud-label { color: var(--color-dim); }
+
+.hud-value {
+  color: var(--color-neon-green);
+  font-weight: bold;
+}
+
+.hud-credit {
+  color: var(--color-neon-gold);
+  font-size: clamp(0.8rem, 3vw, 1rem);
+  text-shadow: 0 0 8px var(--color-neon-gold);
+}
+
+.hud-rank {
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+}
+.rank-BRONZE { background: #cd7f32; color: #000; }
+.rank-SILVER { background: #c0c0c0; color: #000; }
+.rank-GOLD   { background: var(--color-neon-gold); color: #000; }
+.rank-PLATINUM { background: #00d4ff; color: #000; }
+
+.hud-logout-btn {
+  background: transparent;
+  border: 1px solid var(--color-neon-pink);
+  border-radius: 4px;
+  color: var(--color-neon-pink);
+  font-family: var(--font-pixel);
+  font-size: 0.65rem;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  transition: all var(--transition);
+}
+.hud-logout-btn:hover { background: rgba(255,0,110,0.15); box-shadow: var(--shadow-neon-pink); }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   クレジット不足モーダル
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+#credit-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 8500;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+#credit-modal.visible { display: flex; }
+
+.modal-box {
+  background: var(--color-surface);
+  border: 2px solid var(--color-neon-pink);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow-neon-pink);
+}
+.modal-title { font-size: 1.1rem; color: var(--color-neon-pink); margin-bottom: 0.8rem; letter-spacing: 0.1em; }
+.modal-body  { font-size: 0.8rem; color: var(--color-dim); line-height: 1.8; margin-bottom: 1.2rem; }
+.modal-close {
+  background: transparent;
+  border: 1.5px solid var(--color-neon-pink);
+  border-radius: var(--radius);
+  color: var(--color-neon-pink);
+  font-family: var(--font-pixel);
+  padding: 0.6rem 1.5rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  transition: all var(--transition);
+}
+.modal-close:hover { background: rgba(255,0,110,0.15); }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   管理者パネル
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+#admin-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  background: rgba(0,0,0,0.95);
+  display: none;
+  flex-direction: column;
+  padding: 1rem;
+  overflow-y: auto;
+}
+#admin-panel.visible { display: flex; }
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-neon-blue);
+  padding-bottom: 0.8rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-title { font-size: clamp(0.9rem, 3vw, 1.2rem); color: var(--color-neon-blue); letter-spacing: 0.15em; }
+
+.admin-close {
+  background: transparent;
+  border: 1.5px solid var(--color-neon-pink);
+  border-radius: 4px;
+  color: var(--color-neon-pink);
+  font-family: var(--font-pixel);
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+
+/* 管理フォーム */
+.admin-section {
+  background: var(--color-surface);
+  border: 1px solid #224;
+  border-radius: var(--radius);
+  padding: 1.2rem;
+  margin-bottom: 1.2rem;
+}
+
+.admin-section-title {
+  font-size: 0.75rem;
+  color: var(--color-neon-blue);
+  letter-spacing: 0.15em;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #224;
+  padding-bottom: 0.5rem;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.admin-field label {
+  display: block;
+  font-size: 0.6rem;
+  color: var(--color-dim);
+  letter-spacing: 0.1em;
+  margin-bottom: 0.3rem;
+}
+
+.admin-field input,
+.admin-field select {
+  width: 100%;
+  background: #0a0a1a;
+  border: 1px solid #336;
+  border-radius: 4px;
+  color: var(--color-text);
+  font-family: var(--font-pixel);
+  font-size: 0.8rem;
+  padding: 0.5rem 0.6rem;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.admin-field input:focus, .admin-field select:focus { border-color: var(--color-neon-blue); }
+.admin-field select option { background: #1a1a2e; }
+
+.admin-btn {
+  background: transparent;
+  border: 1.5px solid var(--color-neon-green);
+  border-radius: var(--radius);
+  color: var(--color-neon-green);
+  font-family: var(--font-pixel);
+  font-size: 0.75rem;
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  transition: all var(--transition);
+  margin-right: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+.admin-btn:hover { background: rgba(0,255,136,0.1); box-shadow: var(--shadow-neon-green); }
+.admin-btn.danger  { border-color: var(--color-neon-pink); color: var(--color-neon-pink); }
+.admin-btn.danger:hover { background: rgba(255,0,110,0.1); box-shadow: var(--shadow-neon-pink); }
+
+.admin-msg {
+  font-size: 0.72rem;
+  min-height: 1.2em;
+  margin-top: 0.5rem;
+  letter-spacing: 0.05em;
+}
+.admin-msg.ok  { color: var(--color-neon-green); }
+.admin-msg.err { color: var(--color-neon-pink); }
+
+/* 会員テーブル */
+.member-table-wrap { overflow-x: auto; margin-top: 0.8rem; }
+
+.member-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.member-table th {
+  background: #0d1117;
+  color: var(--color-neon-blue);
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid #224;
+}
+
+.member-table td {
+  padding: 0.45rem 0.7rem;
+  border-bottom: 1px solid #1a1a2e;
+  color: var(--color-text);
+}
+
+.member-table tr:hover td { background: rgba(0,212,255,0.04); }
+
+.tbl-btn {
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  font-family: var(--font-pixel);
+  font-size: 0.62rem;
+  padding: 0.2rem 0.45rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  margin-right: 0.3rem;
+}
+.tbl-edit { color: var(--color-neon-green); }
+.tbl-edit:hover { background: rgba(0,255,136,0.12); }
+.tbl-del  { color: var(--color-neon-pink); }
+.tbl-del:hover { background: rgba(255,0,110,0.12); }
+
+/* ステータスバッジ */
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.62rem;
+  font-weight: bold;
+}
+.badge-on  { background: #002211; color: var(--color-neon-green); border: 1px solid var(--color-neon-green); }
+.badge-off { background: #220011; color: var(--color-neon-pink);  border: 1px solid var(--color-neon-pink); }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   アニメーション
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@keyframes spin    { to { transform: rotate(360deg); } }
+@keyframes flicker {
+  0%,94%,96%,100% { opacity: 1; }
+  95% { opacity: 0.7; }
+}
+@keyframes pulse-neon {
+  0%,100% { text-shadow: 0 0 8px var(--color-neon-gold); }
+  50%      { text-shadow: 0 0 20px var(--color-neon-gold), 0 0 40px #ffd70088; }
+}
+
+.hud-credit { animation: pulse-neon 2.5s infinite; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   レスポンシブ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+@media (max-width: 480px) {
+  .login-cabinet { padding: 2rem 1.2rem; }
+  .admin-form-grid { grid-template-columns: 1fr 1fr; }
+  .hud-block:nth-child(n+4) { display: none; } /* モバイルでは主要情報のみ表示 */
+}
+
+@media (min-width: 768px) {
+  #member-hud { padding: 0.6rem 2rem; }
+}
+
+/* 本体コンテンツ領域のオフセット（HUD分） */
+body.logged-in { padding-top: 44px; }
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+  ① ログインオーバーレイ
+================================================================ -->
+<div id="login-overlay">
+  <div class="login-cabinet">
+    <div class="login-logo">🕹 RETRO ARCADE HUB</div>
+    <div class="login-sub">MEMBER LOGIN REQUIRED</div>
+
+    <label class="login-label" for="member-id-input">▶ MEMBER ID / 会員番号</label>
+    <input
+      id="member-id-input"
+      class="login-input"
+      type="text"
+      maxlength="20"
+      placeholder="例: M001"
+      autocomplete="off"
+      spellcheck="false"
+    >
+
+    <button id="login-btn" class="login-btn">INSERT COIN ▶ LOGIN</button>
+
+    <div id="login-msg" class="login-msg"></div>
+    <div id="login-spinner" class="login-spinner"></div>
+  </div>
+</div>
+
+<!-- ================================================================
+  ② HUDバー（ログイン後）
+================================================================ -->
+<div id="member-hud">
+  <div class="hud-block">
+    <span class="hud-label">PLAYER:</span>
+    <span class="hud-value" id="hud-name">---</span>
+    <span class="hud-rank" id="hud-rank">---</span>
+  </div>
+  <div class="hud-block">
+    <span class="hud-label">ID:</span>
+    <span class="hud-value" id="hud-id">---</span>
+  </div>
+  <div class="hud-block">
+    <span class="hud-label">CREDIT</span>
+    <span class="hud-credit" id="hud-credit">00</span>
+  </div>
+  <div class="hud-block">
+    <button class="hud-logout-btn" id="logout-btn">LOGOUT</button>
+  </div>
+</div>
+
+<!-- ================================================================
+  ③ クレジット不足モーダル
+================================================================ -->
+<div id="credit-modal">
+  <div class="modal-box">
+    <div class="modal-title">⚠ CREDIT REQUIRED</div>
+    <div class="modal-body">
+      クレジットが不足しています。<br>
+      管理者にクレジットの追加をご依頼ください。<br><br>
+      現在のクレジット: <span id="modal-credit-val" style="color:var(--color-neon-gold)">0</span>
+    </div>
+    <button class="modal-close" id="modal-close-btn">CLOSE</button>
+  </div>
+</div>
+
+<!-- ================================================================
+  ④ 管理者パネル
+================================================================ -->
+<div id="admin-panel">
+  <div class="admin-header">
+    <div class="admin-title">⚙ ADMIN PANEL - 管理者コンソール</div>
+    <button class="admin-close" id="admin-close-btn">✕ 閉じる</button>
+  </div>
+
+  <!-- 管理者ログイン -->
+  <div id="admin-login-section" class="admin-section">
+    <div class="admin-section-title">▶ 管理者認証</div>
+    <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:flex-end;">
+      <div class="admin-field" style="flex:1; min-width:160px;">
+        <label>管理者パスワード</label>
+        <input type="password" id="admin-pw" placeholder="パスワードを入力">
+      </div>
+      <button class="admin-btn" id="admin-login-btn">認証</button>
+    </div>
+    <div class="admin-msg" id="admin-login-msg"></div>
+  </div>
+
+  <!-- 会員管理セクション（認証後に表示） -->
+  <div id="admin-main" style="display:none;">
+
+    <!-- 会員追加 -->
+    <div class="admin-section">
+      <div class="admin-section-title">▶ 会員追加</div>
+      <div class="admin-form-grid">
+        <div class="admin-field"><label>会員番号 *</label><input type="text" id="add-id" placeholder="例: M010"></div>
+        <div class="admin-field"><label>会員名 *</label><input type="text" id="add-name" placeholder="例: 山田太郎"></div>
+        <div class="admin-field"><label>クレジット</label><input type="number" id="add-credit" value="0" min="0"></div>
+        <div class="admin-field">
+          <label>ランク</label>
+          <select id="add-rank">
+            <option>BRONZE</option><option>SILVER</option><option>GOLD</option><option>PLATINUM</option>
+          </select>
+        </div>
+        <div class="admin-field">
+          <label>ステータス</label>
+          <select id="add-status"><option>有効</option><option>無効</option></select>
+        </div>
+        <div class="admin-field"><label>メール</label><input type="email" id="add-email" placeholder="任意"></div>
+        <div class="admin-field" style="grid-column: 1/-1"><label>メモ</label><input type="text" id="add-memo" placeholder="任意"></div>
+      </div>
+      <button class="admin-btn" id="admin-add-btn">▶ 会員を追加</button>
+      <div class="admin-msg" id="admin-add-msg"></div>
+    </div>
+
+    <!-- クレジット操作 -->
+    <div class="admin-section">
+      <div class="admin-section-title">▶ クレジット操作</div>
+      <div class="admin-form-grid">
+        <div class="admin-field"><label>会員番号 *</label><input type="text" id="cr-id" placeholder="例: M001"></div>
+        <div class="admin-field"><label>金額</label><input type="number" id="cr-amount" value="10" min="0"></div>
+        <div class="admin-field">
+          <label>操作</label>
+          <select id="cr-mode">
+            <option value="add">加算 (+)</option>
+            <option value="subtract">減算 (-)</option>
+            <option value="set">設定 (=)</option>
+          </select>
+        </div>
+      </div>
+      <button class="admin-btn" id="admin-cr-btn">▶ クレジット更新</button>
+      <div class="admin-msg" id="admin-cr-msg"></div>
+    </div>
+
+    <!-- 会員一覧 -->
+    <div class="admin-section">
+      <div class="admin-section-title">▶ 会員一覧</div>
+      <button class="admin-btn" id="admin-list-btn">▶ 一覧を更新</button>
+      <div class="admin-msg" id="admin-list-msg"></div>
+      <div class="member-table-wrap">
+        <table class="member-table" id="member-table">
+          <thead>
+            <tr>
+              <th>会員番号</th><th>会員名</th><th>クレジット</th>
+              <th>ステータス</th><th>ランク</th><th>最終ログイン</th><th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="member-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 会員編集（インライン） -->
+    <div class="admin-section" id="edit-section" style="display:none;">
+      <div class="admin-section-title">▶ 会員編集</div>
+      <div class="admin-form-grid">
+        <div class="admin-field"><label>会員番号（変更不可）</label><input type="text" id="edit-id" readonly style="opacity:0.5;"></div>
+        <div class="admin-field"><label>会員名</label><input type="text" id="edit-name"></div>
+        <div class="admin-field"><label>クレジット</label><input type="number" id="edit-credit" min="0"></div>
+        <div class="admin-field">
+          <label>ランク</label>
+          <select id="edit-rank">
+            <option>BRONZE</option><option>SILVER</option><option>GOLD</option><option>PLATINUM</option>
+          </select>
+        </div>
+        <div class="admin-field">
+          <label>ステータス</label>
+          <select id="edit-status"><option>有効</option><option>無効</option></select>
+        </div>
+        <div class="admin-field"><label>メール</label><input type="email" id="edit-email"></div>
+        <div class="admin-field" style="grid-column:1/-1"><label>メモ</label><input type="text" id="edit-memo"></div>
+      </div>
+      <button class="admin-btn" id="admin-save-btn">▶ 保存</button>
+      <button class="admin-btn" style="border-color:#555;color:#555;" id="admin-cancel-btn">キャンセル</button>
+      <div class="admin-msg" id="admin-save-msg"></div>
+    </div>
+
+  </div><!-- /admin-main -->
+</div><!-- /admin-panel -->
+
+
+<!-- ================================================================
+  ⑤ メインコンテンツ（既存サイトへの埋め込み用デモ）
+================================================================ -->
+<div id="main-content" style="max-width:900px; margin:2rem auto; padding:1rem; text-align:center; display:none;">
+  <p style="color:#555; font-size:0.75rem; letter-spacing:0.1em;">
+    ↑ このエリアに既存の index.html の内容を統合してください。<br>
+    ログイン後にこのエリアが表示されます。
+  </p>
+  <!-- 管理者パネルを開くボタン（開発用） -->
+  <button id="open-admin-btn" style="
+    margin-top:2rem;
+    background:transparent;
+    border:1px solid #224;
+    border-radius:4px;
+    color:#336;
+    font-family:monospace;
+    font-size:0.65rem;
+    padding:0.3rem 0.8rem;
+    cursor:pointer;
+    letter-spacing:0.08em;
+  ">ADMIN</button>
+</div>
+
+
+<script>
+// ================================================================
+//  RETRO ARCADE HUB - 会員管理 フロントエンド JS
+// ================================================================
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 設定 ← GAS Web アプリをデプロイした後の URL に変更
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const GAS_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// アプリ状態
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const App = {
+  memberId:    null,
+  memberName:  null,
+  credit:      0,
+  rank:        'BRONZE',
+  adminToken:  null,
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// GAS API 呼び出し（セキュアな非同期通信）
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function callGAS(payload) {
+  const res = await fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },  // GAS POSTにはtext/plain推奨
+    body: JSON.stringify(payload),
+    redirect: 'follow',
+  });
+  if (!res.ok) throw new Error('通信エラー: ' + res.status);
+  return res.json();
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ログイン処理
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const loginOverlay  = document.getElementById('login-overlay');
+const loginBtn      = document.getElementById('login-btn');
+const loginInput    = document.getElementById('member-id-input');
+const loginMsg      = document.getElementById('login-msg');
+const loginSpinner  = document.getElementById('login-spinner');
+
+async function doLogin() {
+  const id = loginInput.value.trim();
+  if (!id) { showLoginMsg('会員番号を入力してください。', 'error'); return; }
+
+  setLoginLoading(true);
+  showLoginMsg('認証中...', '');
+
+  try {
+    const res = await callGAS({ action: 'login', memberId: id });
+
+    if (res.success) {
+      App.memberId   = res.memberId;
+      App.memberName = res.memberName;
+      App.credit     = res.credit;
+      App.rank       = res.rank;
+
+      showLoginMsg(res.message, 'success');
+      setTimeout(onLoginSuccess, 800);
+    } else {
+      showLoginMsg(res.message || 'ログインに失敗しました。', 'error');
+      loginInput.select();
+    }
+  } catch (e) {
+    showLoginMsg('通信エラーが発生しました。', 'error');
+    console.error(e);
+  } finally {
+    setLoginLoading(false);
+  }
+}
+
+function setLoginLoading(on) {
+  loginBtn.disabled     = on;
+  loginSpinner.className = on ? 'login-spinner active' : 'login-spinner';
+}
+
+function showLoginMsg(msg, type) {
+  loginMsg.textContent  = msg;
+  loginMsg.className    = 'login-msg' + (type ? ' ' + type : '');
+}
+
+loginBtn.addEventListener('click', doLogin);
+loginInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ログイン成功後の UI 更新
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function onLoginSuccess() {
+  // オーバーレイ非表示
+  loginOverlay.classList.add('hidden');
+
+  // HUD 更新
+  document.getElementById('hud-name').textContent   = App.memberName;
+  document.getElementById('hud-id').textContent     = App.memberId;
+  document.getElementById('hud-credit').textContent = String(App.credit).padStart(2, '0');
+  const rankEl = document.getElementById('hud-rank');
+  rankEl.textContent  = App.rank;
+  rankEl.className    = 'hud-rank rank-' + App.rank;
+  document.getElementById('member-hud').classList.add('visible');
+
+  // クレジット表示（既存サイトの「CREDIT 00」要素があれば更新）
+  const creditDisplay = document.querySelector('.credit-display, [data-credit]');
+  if (creditDisplay) creditDisplay.textContent = String(App.credit).padStart(2, '0');
+
+  document.body.classList.add('logged-in');
+  document.getElementById('main-content').style.display = 'block';
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ログアウト
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+document.getElementById('logout-btn').addEventListener('click', () => {
+  if (!confirm('ログアウトしますか？')) return;
+  App.memberId = App.memberName = App.adminToken = null;
+  App.credit = 0;
+  loginInput.value = '';
+  showLoginMsg('', '');
+  document.getElementById('member-hud').classList.remove('visible');
+  document.getElementById('main-content').style.display = 'none';
+  document.body.classList.remove('logged-in');
+  loginOverlay.classList.remove('hidden');
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// クレジット使用（ゲームリンク等から呼び出す）
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+window.useCredit = async function(gameName = 'ゲーム', amount = 1) {
+  if (!App.memberId) { alert('ログインが必要です。'); return false; }
+
+  if (App.credit < amount) {
+    document.getElementById('modal-credit-val').textContent = App.credit;
+    document.getElementById('credit-modal').classList.add('visible');
+    return false;
+  }
+
+  try {
+    const res = await callGAS({
+      action: 'useCredit',
+      memberId: App.memberId,
+      gameName: gameName,
+      amount: amount
+    });
+    if (res.success) {
+      App.credit = res.credit;
+      document.getElementById('hud-credit').textContent = String(App.credit).padStart(2, '0');
+      return true;
+    } else {
+      alert(res.message || 'クレジットエラー');
+      return false;
+    }
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
+};
+
+document.getElementById('modal-close-btn').addEventListener('click', () => {
+  document.getElementById('credit-modal').classList.remove('visible');
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 管理者パネル
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+document.getElementById('open-admin-btn').addEventListener('click', () => {
+  document.getElementById('admin-panel').classList.add('visible');
+});
+document.getElementById('admin-close-btn').addEventListener('click', () => {
+  document.getElementById('admin-panel').classList.remove('visible');
+});
+
+// 管理者ログイン
+document.getElementById('admin-login-btn').addEventListener('click', async () => {
+  const pw = document.getElementById('admin-pw').value;
+  const msg = document.getElementById('admin-login-msg');
+  try {
+    const res = await callGAS({ action: 'adminLogin', password: pw });
+    if (res.success) {
+      App.adminToken = res.token;
+      document.getElementById('admin-login-section').style.display = 'none';
+      document.getElementById('admin-main').style.display = 'block';
+      loadMemberList();
+    } else {
+      msg.textContent = res.message; msg.className = 'admin-msg err';
+    }
+  } catch (e) { msg.textContent = '通信エラー'; msg.className = 'admin-msg err'; }
+});
+
+// 会員追加
+document.getElementById('admin-add-btn').addEventListener('click', async () => {
+  const msg = document.getElementById('admin-add-msg');
+  try {
+    const res = await callGAS({
+      action: 'adminAddMember', token: App.adminToken,
+      memberId:   document.getElementById('add-id').value.trim(),
+      memberName: document.getElementById('add-name').value.trim(),
+      credit:     document.getElementById('add-credit').value,
+      rank:       document.getElementById('add-rank').value,
+      status:     document.getElementById('add-status').value,
+      email:      document.getElementById('add-email').value.trim(),
+      memo:       document.getElementById('add-memo').value.trim(),
+    });
+    msg.textContent = res.message;
+    msg.className   = 'admin-msg ' + (res.success ? 'ok' : 'err');
+    if (res.success) loadMemberList();
+  } catch (e) { msg.textContent = '通信エラー'; msg.className = 'admin-msg err'; }
+});
+
+// クレジット更新
+document.getElementById('admin-cr-btn').addEventListener('click', async () => {
+  const msg = document.getElementById('admin-cr-msg');
+  try {
+    const res = await callGAS({
+      action: 'adminUpdateCredit', token: App.adminToken,
+      memberId: document.getElementById('cr-id').value.trim(),
+      amount:   document.getElementById('cr-amount').value,
+      mode:     document.getElementById('cr-mode').value,
+    });
+    msg.textContent = res.message + (res.credit !== undefined ? '（残: ' + res.credit + '）' : '');
+    msg.className   = 'admin-msg ' + (res.success ? 'ok' : 'err');
+    if (res.success) loadMemberList();
+  } catch (e) { msg.textContent = '通信エラー'; msg.className = 'admin-msg err'; }
+});
+
+// 会員一覧ロード
+document.getElementById('admin-list-btn').addEventListener('click', loadMemberList);
+
+async function loadMemberList() {
+  const msg   = document.getElementById('admin-list-msg');
+  const tbody = document.getElementById('member-tbody');
+  msg.textContent = '読み込み中...'; msg.className = 'admin-msg';
+  try {
+    const res = await callGAS({ action: 'adminGetMembers', token: App.adminToken });
+    if (!res.success) { msg.textContent = res.message; msg.className='admin-msg err'; return; }
+    tbody.innerHTML = '';
+    res.members.forEach(m => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${m.memberId}</td>
+        <td>${m.memberName}</td>
+        <td style="color:var(--color-neon-gold)">${m.credit}</td>
+        <td><span class="badge ${m.status==='有効'?'badge-on':'badge-off'}">${m.status}</span></td>
+        <td><span class="hud-rank rank-${m.rank}" style="font-size:0.62rem">${m.rank}</span></td>
+        <td style="color:var(--color-dim);font-size:0.65rem">${m.lastLogin||'—'}</td>
+        <td>
+          <button class="tbl-btn tbl-edit" onclick="openEdit(${JSON.stringify(m).replace(/"/g,'&quot;')})">編集</button>
+          <button class="tbl-btn tbl-del"  onclick="deleteMember('${m.memberId}')">削除</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+    msg.textContent = res.members.length + '件の会員が見つかりました。';
+    msg.className   = 'admin-msg ok';
+  } catch (e) { msg.textContent = '通信エラー'; msg.className='admin-msg err'; }
+}
+
+// 編集フォームを開く
+window.openEdit = function(m) {
+  document.getElementById('edit-section').style.display = 'block';
+  document.getElementById('edit-id').value     = m.memberId;
+  document.getElementById('edit-name').value   = m.memberName;
+  document.getElementById('edit-credit').value = m.credit;
+  document.getElementById('edit-rank').value   = m.rank;
+  document.getElementById('edit-status').value = m.status;
+  document.getElementById('edit-email').value  = m.email || '';
+  document.getElementById('edit-memo').value   = m.memo  || '';
+  document.getElementById('edit-section').scrollIntoView({ behavior: 'smooth' });
+};
+
+document.getElementById('admin-save-btn').addEventListener('click', async () => {
+  const msg = document.getElementById('admin-save-msg');
+  try {
+    const res = await callGAS({
+      action: 'adminUpdateMember', token: App.adminToken,
+      memberId:   document.getElementById('edit-id').value,
+      memberName: document.getElementById('edit-name').value,
+      credit:     document.getElementById('edit-credit').value,
+      rank:       document.getElementById('edit-rank').value,
+      status:     document.getElementById('edit-status').value,
+      email:      document.getElementById('edit-email').value,
+      memo:       document.getElementById('edit-memo').value,
+    });
+    msg.textContent = res.message;
+    msg.className   = 'admin-msg ' + (res.success ? 'ok' : 'err');
+    if (res.success) { loadMemberList(); document.getElementById('edit-section').style.display='none'; }
+  } catch (e) { msg.textContent = '通信エラー'; msg.className='admin-msg err'; }
+});
+
+document.getElementById('admin-cancel-btn').addEventListener('click', () => {
+  document.getElementById('edit-section').style.display = 'none';
+});
+
+// 会員削除
+window.deleteMember = async function(memberId) {
+  if (!confirm(memberId + ' を削除しますか？この操作は元に戻せません。')) return;
+  try {
+    const res = await callGAS({ action: 'adminDeleteMember', token: App.adminToken, memberId });
+    const msg = document.getElementById('admin-list-msg');
+    msg.textContent = res.message;
+    msg.className   = 'admin-msg ' + (res.success ? 'ok' : 'err');
+    if (res.success) loadMemberList();
+  } catch (e) {
+    document.getElementById('admin-list-msg').textContent = '通信エラー';
+  }
+};
+</script>
+</body>
+</html>
