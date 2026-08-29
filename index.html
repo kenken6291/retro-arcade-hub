@@ -19,29 +19,65 @@
 </head>
 <body class="crt-active">
 
-<!-- ① ログイン / お試し登録 オーバーレイ -->
+<!-- ① ログイン / 新規登録 / お試し登録 オーバーレイ -->
 <div id="login-overlay">
   <div class="login-cabinet">
     <div class="logo">🕹 RETRO ARCADE HUB</div>
-    <div class="logo-sub">MEMBER ACCESS SYSTEM v2</div>
+    <div class="logo-sub">MEMBER ACCESS SYSTEM v3</div>
 
     <!-- タブ -->
     <div class="tabs">
-      <button class="tab-btn active" data-tab="login">▶ 会員ログイン</button>
+      <button class="tab-btn active" data-tab="login">▶ ログイン</button>
+      <button class="tab-btn"        data-tab="register">📧 新規登録</button>
       <button class="tab-btn"        data-tab="trial">🎮 お試しプレイ</button>
     </div>
 
     <!-- ログインパネル -->
     <div class="panel active" id="panel-login">
-      <label class="field-label">MEMBER ID / 会員番号</label>
-      <input id="member-id" class="field-input" type="text" maxlength="20"
-             placeholder="例: M0001" autocomplete="off" spellcheck="false">
-      <label class="field-label">PIN / 暗証番号（4桁）</label>
-      <input id="member-pin" class="field-input" type="password" maxlength="6" inputmode="numeric"
-             placeholder="例: 1234" autocomplete="off" spellcheck="false">
+      <label class="field-label">EMAIL / メールアドレス</label>
+      <input id="login-email" class="field-input" type="email" maxlength="120"
+             placeholder="例: taro@example.com" autocomplete="username" spellcheck="false">
+      <label class="field-label">PASSWORD / パスワード</label>
+      <div class="pw-field">
+        <input id="login-password" class="field-input" type="password" maxlength="100"
+               placeholder="パスワード" autocomplete="current-password" spellcheck="false">
+        <button type="button" class="pw-toggle" data-target="login-password" aria-label="パスワードの表示切替">👁</button>
+      </div>
       <button id="login-btn" class="submit-btn">INSERT COIN ▶ LOGIN</button>
       <div id="login-msg" class="msg"></div>
       <div id="login-sp"  class="spinner"></div>
+      <button type="button" id="forgot-link" class="link-btn">パスワードを忘れた方はこちら</button>
+    </div>
+
+    <!-- パスワードを忘れた方パネル -->
+    <div class="panel" id="panel-forgot">
+      <div class="trial-info">
+        ご登録のメールアドレスに仮パスワードを再発行してお送りします。
+      </div>
+      <label class="field-label">EMAIL / メールアドレス</label>
+      <input id="forgot-email" class="field-input" type="email" maxlength="120"
+             placeholder="例: taro@example.com" autocomplete="username" spellcheck="false">
+      <button id="forgot-btn" class="submit-btn">▶ 仮パスワードを再発行</button>
+      <div id="forgot-msg" class="msg"></div>
+      <div id="forgot-sp"  class="spinner"></div>
+      <button type="button" id="back-to-login-link" class="link-btn">ログインへ戻る</button>
+    </div>
+
+    <!-- 新規登録パネル -->
+    <div class="panel" id="panel-register">
+      <div class="trial-info">
+        メールアドレスを登録すると<strong>🎁 初回100クレジット</strong>をプレゼント✨<br>
+        登録後、仮パスワードをメールでお送りします。初回ログイン時に新しいパスワードへの変更をお願いします。
+      </div>
+      <label class="field-label">NICKNAME / ニックネーム（12文字以内）</label>
+      <input id="register-nick" class="field-input nick" type="text" maxlength="12"
+             placeholder="例: アーケーダー" autocomplete="off">
+      <label class="field-label">EMAIL / メールアドレス</label>
+      <input id="register-email" class="field-input" type="email" maxlength="120"
+             placeholder="例: taro@example.com" autocomplete="email" spellcheck="false">
+      <button id="register-btn" class="submit-btn">📧 登録して仮パスワードを受け取る</button>
+      <div id="register-msg" class="msg"></div>
+      <div id="register-sp"  class="spinner"></div>
     </div>
 
     <!-- お試しパネル -->
@@ -58,7 +94,55 @@
       <button id="trial-btn" class="submit-btn trial">🎮 今すぐ START!</button>
       <div id="trial-msg" class="msg"></div>
       <div id="trial-sp"  class="spinner"></div>
+      <div class="trial-info" style="margin-top:1rem">
+        すでにお試し登録済みの方は
+        <button type="button" id="trial-login-link" class="link-btn" style="display:inline">こちらから会員番号+PINでログイン</button>
+      </div>
     </div>
+
+    <!-- お試し会員 再ログインパネル -->
+    <div class="panel" id="panel-trial-login">
+      <label class="field-label">MEMBER ID / 会員番号</label>
+      <input id="trial-login-id" class="field-input" type="text" maxlength="20"
+             placeholder="例: M0003" autocomplete="off" spellcheck="false">
+      <label class="field-label">PIN / 暗証番号（4桁）</label>
+      <input id="trial-login-pin" class="field-input" type="password" maxlength="6" inputmode="numeric"
+             placeholder="例: 1234" autocomplete="off" spellcheck="false">
+      <button id="trial-login-btn" class="submit-btn trial">🎮 ログイン</button>
+      <div id="trial-login-msg" class="msg"></div>
+      <div id="trial-login-sp"  class="spinner"></div>
+      <button type="button" id="back-to-trial-link" class="link-btn">お試し登録へ戻る</button>
+    </div>
+  </div>
+</div>
+
+<!-- ①-b 初回ログイン時 パスワード変更（強制） オーバーレイ -->
+<div id="pwchange-overlay" class="hidden">
+  <div class="login-cabinet">
+    <div class="logo">🔒 PASSWORD CHANGE</div>
+    <div class="logo-sub">初回ログインのため、新しいパスワードを設定してください</div>
+
+    <label class="field-label">現在の仮パスワード</label>
+    <div class="pw-field">
+      <input id="pwc-current" class="field-input" type="password" maxlength="100"
+             placeholder="仮パスワード" autocomplete="current-password" spellcheck="false">
+      <button type="button" class="pw-toggle" data-target="pwc-current" aria-label="パスワードの表示切替">👁</button>
+    </div>
+    <label class="field-label">新しいパスワード（8文字以上）</label>
+    <div class="pw-field">
+      <input id="pwc-new" class="field-input" type="password" maxlength="100"
+             placeholder="新しいパスワード" autocomplete="new-password" spellcheck="false">
+      <button type="button" class="pw-toggle" data-target="pwc-new" aria-label="パスワードの表示切替">👁</button>
+    </div>
+    <label class="field-label">新しいパスワード（確認）</label>
+    <div class="pw-field">
+      <input id="pwc-confirm" class="field-input" type="password" maxlength="100"
+             placeholder="新しいパスワード（確認）" autocomplete="new-password" spellcheck="false">
+      <button type="button" class="pw-toggle" data-target="pwc-confirm" aria-label="パスワードの表示切替">👁</button>
+    </div>
+    <button id="pwc-btn" class="submit-btn">▶ パスワードを変更してログイン</button>
+    <div id="pwc-msg" class="msg"></div>
+    <div id="pwc-sp"  class="spinner"></div>
   </div>
 </div>
 
@@ -132,9 +216,12 @@
         <div class="fl"><label>ステータス</label>
           <select id="add-st"><option>有効</option><option>無効</option></select>
         </div>
-        <div class="fl"><label>メール</label><input type="email" id="add-mail" placeholder="任意"></div>
-        <div class="fl"><label>PIN（4桁・空欄で自動発行）</label><input type="text" id="add-pin" placeholder="例: 1234" maxlength="6" inputmode="numeric"></div>
+        <div class="fl"><label>メール（正規会員は必須・仮パスワードを送信）</label><input type="email" id="add-mail" placeholder="taro@example.com"></div>
         <div class="fl full"><label>メモ</label><input type="text" id="add-memo" placeholder="任意"></div>
+      </div>
+      <div class="am" style="color:var(--dim);margin-bottom:.6rem">
+        種別「正規」: メール宛に仮パスワードを自動発行・送信します。<br>
+        種別「お試し」: PINを自動発行します（追加後の完了メッセージに表示）。
       </div>
       <button class="ab" id="adm-add">▶ 追加</button>
       <div class="am" id="add-msg"></div>
@@ -192,7 +279,13 @@
         <div class="fl full">
           <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer">
             <input type="checkbox" id="edit-resetpin" style="width:auto">
-            PINを再発行する（本人がPINを忘れた場合のみチェック）
+            PINを再発行する（お試し会員がPINを忘れた場合のみチェック）
+          </label>
+        </div>
+        <div class="fl full">
+          <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer">
+            <input type="checkbox" id="edit-resetpassword" style="width:auto">
+            仮パスワードを再発行してメール送信する（正規会員がパスワードを忘れた場合のみチェック）
           </label>
         </div>
       </div>
@@ -1023,39 +1116,145 @@ async function api(payload) {
 }
 
 // ── タブ切り替え ──────────────────────────────────────────────
+function showPanel(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const tabBtn = document.querySelector('.tab-btn[data-tab="' + name + '"]');
+  if (tabBtn) tabBtn.classList.add('active');
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+}
 document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => showPanel(btn.dataset.tab));
+});
+document.getElementById('forgot-link').addEventListener('click', () => showPanel('forgot'));
+document.getElementById('back-to-login-link').addEventListener('click', () => showPanel('login'));
+document.getElementById('trial-login-link').addEventListener('click', () => showPanel('trial-login'));
+document.getElementById('back-to-trial-link').addEventListener('click', () => showPanel('trial'));
+
+// ── パスワード表示/非表示トグル ─────────────────────────────────
+document.querySelectorAll('.pw-toggle').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    const input = document.getElementById(btn.dataset.target);
+    if (!input) return;
+    const showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    btn.classList.toggle('showing', !showing);
+    btn.textContent = showing ? '👁' : '🙈';
   });
 });
 
-// ── ログイン ──────────────────────────────────────────────────
+// ── ログイン（正規会員：メール+パスワード） ─────────────────────
 const loginBtn = document.getElementById('login-btn');
-const loginMid = document.getElementById('member-id');
-const loginPin = document.getElementById('member-pin');
+const loginEmail = document.getElementById('login-email');
+const loginPassword = document.getElementById('login-password');
 
 async function doLogin() {
-  const id  = loginMid.value.trim();
-  const pin = loginPin.value.trim();
-  if (!id)  { setMsg('login', '会員番号を入力してください。', 'err'); return; }
-  if (!pin) { setMsg('login', 'PIN（暗証番号）を入力してください。', 'err'); return; }
+  const email = loginEmail.value.trim();
+  const password = loginPassword.value;
+  if (!email)    { setMsg('login', 'メールアドレスを入力してください。', 'err'); return; }
+  if (!password) { setMsg('login', 'パスワードを入力してください。', 'err'); return; }
   setLoading('login', true);
   setMsg('login', '認証中...', '');
   try {
-    const r = await api({ action:'login', memberId:id, pin:pin });
+    const r = await api({ action:'login', email:email, password:password });
     if (r.success) {
       setMsg('login', r.message, 'ok');
-      setTimeout(() => onLogin(r), 700);
-    } else { setMsg('login', r.message, 'err'); loginPin.value = ''; loginPin.focus(); }
+      if (r.mustChangePassword) {
+        setTimeout(() => openPasswordChange(r), 500);
+      } else {
+        setTimeout(() => onLogin(r), 700);
+      }
+    } else { setMsg('login', r.message, 'err'); loginPassword.value = ''; loginPassword.focus(); }
   } catch(e) { setMsg('login', '通信エラーが発生しました。', 'err'); }
   finally { setLoading('login', false); }
 }
 loginBtn.addEventListener('click', doLogin);
-loginMid.addEventListener('keydown', e => e.key==='Enter' && doLogin());
-loginPin.addEventListener('keydown', e => e.key==='Enter' && doLogin());
+loginEmail.addEventListener('keydown', e => e.key==='Enter' && doLogin());
+loginPassword.addEventListener('keydown', e => e.key==='Enter' && doLogin());
+
+// ── 新規登録（正規会員：ニックネーム+メール） ────────────────────
+const registerBtn  = document.getElementById('register-btn');
+const registerNick = document.getElementById('register-nick');
+const registerEmail = document.getElementById('register-email');
+
+async function doRegister() {
+  const nick  = registerNick.value.trim();
+  const email = registerEmail.value.trim();
+  if (!nick)  { setMsg('register', 'ニックネームを入力してください。', 'err'); return; }
+  if (!email) { setMsg('register', 'メールアドレスを入力してください。', 'err'); return; }
+  setLoading('register', true);
+  setMsg('register', '登録中...', '');
+  try {
+    const r = await api({ action:'register', nickname:nick, email:email });
+    setMsg('register', r.message, r.success ? 'ok' : 'err');
+    if (r.success) {
+      registerNick.value = ''; registerEmail.value = '';
+      setTimeout(() => showPanel('login'), 2500);
+    }
+  } catch(e) { setMsg('register', '通信エラーが発生しました。', 'err'); }
+  finally { setLoading('register', false); }
+}
+registerBtn.addEventListener('click', doRegister);
+registerEmail.addEventListener('keydown', e => e.key==='Enter' && doRegister());
+
+// ── パスワードを忘れた場合（仮パスワード再発行） ──────────────────
+const forgotBtn = document.getElementById('forgot-btn');
+const forgotEmail = document.getElementById('forgot-email');
+
+async function doForgot() {
+  const email = forgotEmail.value.trim();
+  if (!email) { setMsg('forgot', 'メールアドレスを入力してください。', 'err'); return; }
+  setLoading('forgot', true);
+  setMsg('forgot', '処理中...', '');
+  try {
+    const r = await api({ action:'forgotPassword', email:email });
+    setMsg('forgot', r.message, r.success ? 'ok' : 'err');
+    if (r.success) { forgotEmail.value = ''; setTimeout(() => showPanel('login'), 2500); }
+  } catch(e) { setMsg('forgot', '通信エラーが発生しました。', 'err'); }
+  finally { setLoading('forgot', false); }
+}
+forgotBtn.addEventListener('click', doForgot);
+forgotEmail.addEventListener('keydown', e => e.key==='Enter' && doForgot());
+
+// ── 初回ログイン時 強制パスワード変更 ─────────────────────────────
+let pendingLoginResult = null;
+const pwcBtn = document.getElementById('pwc-btn');
+
+function openPasswordChange(loginResult) {
+  pendingLoginResult = loginResult;
+  document.getElementById('pwc-current').value = '';
+  document.getElementById('pwc-new').value = '';
+  document.getElementById('pwc-confirm').value = '';
+  setMsg('pwc', '', '');
+  document.getElementById('pwchange-overlay').classList.remove('hidden');
+}
+
+async function doChangePassword() {
+  const current = document.getElementById('pwc-current').value;
+  const next    = document.getElementById('pwc-new').value;
+  const confirm = document.getElementById('pwc-confirm').value;
+  if (!current) { setMsg('pwc', '現在の仮パスワードを入力してください。', 'err'); return; }
+  if (next.length < 8) { setMsg('pwc', '新しいパスワードは8文字以上にしてください。', 'err'); return; }
+  if (next !== confirm) { setMsg('pwc', '新しいパスワード（確認）が一致しません。', 'err'); return; }
+  setLoading('pwc', true);
+  setMsg('pwc', '更新中...', '');
+  try {
+    const r = await api({
+      action:'changePassword', memberId: pendingLoginResult.memberId,
+      currentPassword: current, newPassword: next
+    });
+    if (r.success) {
+      setMsg('pwc', r.message, 'ok');
+      setTimeout(() => {
+        document.getElementById('pwchange-overlay').classList.add('hidden');
+        onLogin(pendingLoginResult);
+      }, 700);
+    } else { setMsg('pwc', r.message, 'err'); }
+  } catch(e) { setMsg('pwc', '通信エラーが発生しました。', 'err'); }
+  finally { setLoading('pwc', false); }
+}
+pwcBtn.addEventListener('click', doChangePassword);
 
 // ── お試し登録 ────────────────────────────────────────────────
 const trialBtn  = document.getElementById('trial-btn');
@@ -1079,6 +1278,31 @@ async function doTrial() {
 trialBtn.addEventListener('click', doTrial);
 trialNick.addEventListener('keydown', e => e.key==='Enter' && doTrial());
 
+// ── お試し会員の再ログイン（会員番号+PIN） ────────────────────────
+const trialLoginBtn = document.getElementById('trial-login-btn');
+const trialLoginId  = document.getElementById('trial-login-id');
+const trialLoginPin = document.getElementById('trial-login-pin');
+
+async function doTrialLogin() {
+  const id  = trialLoginId.value.trim();
+  const pin = trialLoginPin.value.trim();
+  if (!id)  { setMsg('trial-login', '会員番号を入力してください。', 'err'); return; }
+  if (!pin) { setMsg('trial-login', 'PINを入力してください。', 'err'); return; }
+  setLoading('trial-login', true);
+  setMsg('trial-login', '認証中...', '');
+  try {
+    const r = await api({ action:'trialLogin', memberId:id, pin:pin });
+    if (r.success) {
+      setMsg('trial-login', r.message, 'ok');
+      setTimeout(() => onLogin(r), 700);
+    } else { setMsg('trial-login', r.message, 'err'); trialLoginPin.value = ''; trialLoginPin.focus(); }
+  } catch(e) { setMsg('trial-login', '通信エラーが発生しました。', 'err'); }
+  finally { setLoading('trial-login', false); }
+}
+trialLoginBtn.addEventListener('click', doTrialLogin);
+trialLoginId.addEventListener('keydown', e => e.key==='Enter' && doTrialLogin());
+trialLoginPin.addEventListener('keydown', e => e.key==='Enter' && doTrialLogin());
+
 // ── ログイン後共通処理 ────────────────────────────────────────
 function onLogin(r) {
   App.memberId   = r.memberId;
@@ -1100,6 +1324,7 @@ function onLogin(r) {
 
   document.getElementById('hud').classList.add('on');
   document.getElementById('login-overlay').classList.add('hidden');
+  document.getElementById('pwchange-overlay').classList.add('hidden');
   document.getElementById('main-content').style.display = 'block';
   document.body.classList.add('logged-in');
 }
@@ -1108,12 +1333,14 @@ function onLogin(r) {
 document.getElementById('logout-btn').addEventListener('click', () => {
   if (!confirm('ログアウトしますか？')) return;
   Object.assign(App, { memberId:null, nickname:null, credit:0, rank:'BRONZE', adminToken:null });
-  loginMid.value = ''; loginPin.value = ''; trialNick.value = '';
+  loginEmail.value = ''; loginPassword.value = '';
+  trialNick.value = ''; trialLoginId.value = ''; trialLoginPin.value = '';
   document.getElementById('hud').classList.remove('on');
   document.getElementById('main-content').style.display = 'none';
   document.body.classList.remove('logged-in');
   document.getElementById('login-overlay').classList.remove('hidden');
-  setMsg('login','',''); setMsg('trial','','');
+  showPanel('login');
+  setMsg('login','',''); setMsg('trial','',''); setMsg('register','',''); setMsg('forgot','',''); setMsg('trial-login','','');
 });
 
 // ── クレジット使用（外部からも呼べる） ───────────────────────
@@ -1164,7 +1391,7 @@ document.getElementById('adm-add').addEventListener('click', async () => {
       nickname:   v('add-nick'), credit:     v('add-cr'),
       rank:       v('add-rank'), memberType: v('add-type'),
       status:     v('add-st'),   email:      v('add-mail'),
-      memo:       v('add-memo'), pin:        v('add-pin'),
+      memo:       v('add-memo'),
     });
     m.set(r.message, r.success ? 'ok' : 'err');
     if (r.success) loadList();
@@ -1229,16 +1456,18 @@ document.getElementById('adm-save').addEventListener('click', async () => {
   const m = am('edit');
   try {
     const resetPin = document.getElementById('edit-resetpin').checked;
+    const resetPassword = document.getElementById('edit-resetpassword').checked;
     const r = await api({
       action:'adminUpdateMember', token:App.adminToken,
       memberId:v('edit-id'), memberName:v('edit-name'), nickname:v('edit-nick'),
       credit:v('edit-cr'),   rank:v('edit-rank'),       memberType:v('edit-type'),
       status:v('edit-st'),   email:v('edit-mail'),       memo:v('edit-memo'),
-      resetPin: resetPin,
+      resetPin: resetPin, resetPassword: resetPassword,
     });
     m.set(r.message, r.success?'ok':'err');
     if (r.success) {
       document.getElementById('edit-resetpin').checked = false;
+      document.getElementById('edit-resetpassword').checked = false;
       loadList(); document.getElementById('edit-sec').style.display='none';
     }
   } catch(e) { m.set('通信エラー','err'); }

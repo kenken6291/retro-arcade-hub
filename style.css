@@ -1303,6 +1303,33 @@ body.logged-in{padding-top:48px}
 }
 #login-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none}
 
+/* 初回ログイン時の強制パスワード変更オーバーレイ（ログインオーバーレイと同じ見た目） */
+#pwchange-overlay{
+  position:fixed;inset:0;z-index:9100;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;padding:1rem;
+  transition:opacity .6s,visibility .6s;
+}
+#pwchange-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none}
+
+/* パスワード表示/非表示トグル付き入力欄 */
+.pw-field{position:relative}
+.pw-field .field-input{padding-right:2.6rem}
+.pw-toggle{
+  position:absolute;top:0;right:.2rem;bottom:1rem;margin:auto 0;height:2.2rem;
+  background:transparent;border:none;color:var(--dim);font-size:1rem;
+  cursor:pointer;padding:0 .5rem;line-height:1;transition:color var(--t);
+}
+.pw-toggle:hover{color:var(--green)}
+.pw-toggle.showing{color:var(--blue)}
+
+/* テキストリンク風ボタン（パスワードを忘れた方 / 各種切替リンク） */
+.link-btn{
+  background:none;border:none;color:var(--blue);font-family:var(--font);
+  font-size:.68rem;letter-spacing:.05em;text-decoration:underline;
+  cursor:pointer;margin-top:.8rem;padding:.2rem;
+}
+.link-btn:hover{color:var(--green)}
+
 .login-cabinet{
   width:100%;max-width:440px;background:var(--surface);
   border:2px solid var(--green);border-radius:16px;
