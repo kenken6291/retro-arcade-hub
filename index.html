@@ -1331,7 +1331,8 @@ function onLogin(r) {
 
 // ── ログアウト ────────────────────────────────────────────────
 document.getElementById('logout-btn').addEventListener('click', () => {
-  if (!confirm('ログアウトしますか？')) return;
+  // window.confirm() は一部のブラウザ（LINE/Instagram等のアプリ内ブラウザ）で
+  // ブロックされ常にキャンセル扱いになることがあるため使用しない
   Object.assign(App, { memberId:null, nickname:null, credit:0, rank:'BRONZE', adminToken:null });
   loginEmail.value = ''; loginPassword.value = '';
   trialNick.value = ''; trialLoginId.value = ''; trialLoginPin.value = '';
