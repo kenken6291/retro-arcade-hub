@@ -58,6 +58,10 @@ const GAMES = {
   sudoku: {
     playUrl: `https://${GITHUB_USERNAME}.github.io/sudoku-gas/`,
     codeUrl: `https://github.com/${GITHUB_USERNAME}/sudoku-gas`
+  },
+  maze: {
+    playUrl: `https://${GITHUB_USERNAME}.github.io/maze-escape-game/`,
+    codeUrl: `https://github.com/${GITHUB_USERNAME}/maze-escape-game`
   }
 };
 
@@ -75,7 +79,8 @@ const GAME_LABELS = {
   gunjin: "MILITARY SHOGI",
   uno: "UNO",
   blockkuzushi: "BLOCK KUZUSHI",
-  sudoku: "SUDOKU"
+  sudoku: "SUDOKU",
+  maze: "MAZE ESCAPE"
 };
 
 // --- STATE MANAGEMENT ---
@@ -1795,6 +1800,90 @@ function initSudokuDemo(canvas) {
   loop();
 }
 
+// 14. Maze Escape Demo
+function initMazeDemo(canvas) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const cols = 9, rows = 10;
+  const top = 14;
+  const gridH = H - top - 2;
+  const cell = Math.min((W - 4) / cols, gridH / rows);
+  const gridW = cell * cols;
+  const left = (W - gridW) / 2;
+
+  // Simple fixed demo maze (1 = wall, 0 = path). Border is always wall.
+  const maze = [
+    [1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,1,0,0,0,1],
+    [1,0,1,0,1,0,1,0,1],
+    [1,0,1,0,0,0,1,0,1],
+    [1,0,1,1,1,1,1,0,1],
+    [1,0,0,0,0,0,0,0,1],
+    [1,1,1,0,1,1,1,0,1],
+    [1,0,0,0,1,0,0,0,1],
+    [1,0,1,1,1,0,1,0,1],
+    [1,1,1,1,1,1,1,1,1]
+  ];
+
+  // Precomputed path from start to goal for the auto-demo walker
+  const path = [
+    {r:1,c:1},{r:1,c:2},{r:1,c:3},{r:2,c:3},{r:3,c:3},{r:3,c:2},{r:3,c:1},
+    {r:4,c:1},{r:5,c:1},{r:5,c:2},{r:5,c:3},{r:5,c:4},{r:5,c:5},{r:5,c:6},
+    {r:5,c:7},{r:6,c:7},{r:7,c:7}
+  ];
+  const goal = { r: 7, c: 7 };
+
+  let frame = 0;
+  let pathIndex = 0;
+
+  function cellXY(r, c) {
+    return { x: left + c * cell + cell / 2, y: top + r * cell + cell / 2 };
+  }
+
+  function loop() {
+    frame++;
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, W, H);
+
+    drawPixelText(ctx, 'MAZE', 4, 8, '#fff');
+
+    // Draw maze walls
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (maze[r][c] === 1) {
+          ctx.fillStyle = 'rgba(57,255,20,0.55)';
+          ctx.fillRect(left + c * cell, top + r * cell, cell, cell);
+        }
+      }
+    }
+
+    // Goal marker
+    const g = cellXY(goal.r, goal.c);
+    ctx.fillStyle = '#ffe600';
+    ctx.fillRect(g.x - cell * 0.3, g.y - cell * 0.3, cell * 0.6, cell * 0.6);
+
+    // Advance walker every few frames
+    if (frame % 10 === 0 && pathIndex < path.length - 1) {
+      pathIndex++;
+    }
+    if (pathIndex >= path.length - 1 && frame % 60 === 0) {
+      pathIndex = 0;
+    }
+
+    const p = path[Math.min(pathIndex, path.length - 1)];
+    const pos = cellXY(p.r, p.c);
+    ctx.fillStyle = '#39ff14';
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, cell * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+
+    demoAnimationIds.maze = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
 function initDemos() {
   const cInvaders = document.getElementById("canvas-invaders");
   const cTetris = document.getElementById("canvas-tetris");
@@ -1809,6 +1898,7 @@ function initDemos() {
   const cUno = document.getElementById("canvas-uno");
   const cBlockKuzushi = document.getElementById("canvas-blockkuzushi");
   const cSudoku = document.getElementById("canvas-sudoku");
+  const cMaze = document.getElementById("canvas-maze");
 
   if (cInvaders) initInvadersDemo(cInvaders);
   if (cTetris) initTetrisDemo(cTetris);
@@ -1823,6 +1913,7 @@ function initDemos() {
   if (cUno) initUnoDemo(cUno);
   if (cBlockKuzushi) initBlockKuzushiDemo(cBlockKuzushi);
   if (cSudoku) initSudokuDemo(cSudoku);
+  if (cMaze) initMazeDemo(cMaze);
 }
 
 // --- HUD & INTERACTION LOGIC ---

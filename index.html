@@ -936,6 +936,49 @@
         </article>
       </div>
 
+      <!-- 14. MAZE ESCAPE CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-maze" id="cab-maze">
+          <div class="cab-marquee">MAZE ESCAPE</div>
+
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-maze">READY TO PLAY</div>
+
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-maze" class="demo-canvas" width="130" height="140"></canvas>
+
+            <div class="screen-intro">
+              <p class="tagline">Maze Puzzle</p>
+              <h2 class="description">制限時間内にゴールを目指せ！<br>難易度3段階のランダム生成迷路脱出ゲーム。</h2>
+            </div>
+          </div>
+
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="maze" id="play-maze">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="maze" id="code-maze">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
     </div>
 
     <!-- DAILY LEADERBOARD SECTION -->
@@ -1119,6 +1162,16 @@
             <li><span>Click</span> / <span>Tap</span> : マスを選択して数字を入力</li>
             <li>・難易度選択、タイマー、ミスカウント、Undo、ヒント機能を搭載</li>
             <li>・正解データはサーバー側のみで保持し、盤面クリア時に演出表示</li>
+          </ul>
+        </article>
+        <!-- Maze Escape -->
+        <article class="instruction-item cab-maze">
+          <h3>MAZE ESCAPE</h3>
+          <ul>
+            <li><span>矢印キー</span> / <span>WASD</span> / <span>画面ボタン</span> : 移動</li>
+            <li>・難易度3段階（EASY/NORMAL/HARD）でサイズと制限時間が変化</li>
+            <li>・制限時間内にランダム生成迷路のゴールを目指す</li>
+            <li>・スコアはサーバー側に保存され、ランキングに反映</li>
           </ul>
         </article>
       </div>
