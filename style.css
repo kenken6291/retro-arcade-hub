@@ -1409,6 +1409,7 @@ body.logged-in{padding-top:48px}
 }
 #hud.on{display:flex}
 .hb{display:flex;align-items:center;gap:.4rem;font-size:clamp(.58rem,2.2vw,.75rem);letter-spacing:.07em}
+.hb:last-child{flex-shrink:0} /* LOGOUTボタンが押し縮められて見切れないように */
 .hl{color:var(--dim)}.hv{color:var(--green);font-weight:bold}
 .hc{color:var(--gold);font-size:clamp(.8rem,3vw,1rem);animation:pulse 2.5s infinite}
 .hn{color:var(--blue)} /* ニックネーム */
@@ -1426,11 +1427,12 @@ body.logged-in{padding-top:48px}
 .rank-PLATINUM{background:var(--blue);color:#000}
 
 .logout-btn{
-  background:transparent;border:1px solid var(--pink);border-radius:4px;
-  color:var(--pink);font-family:var(--font);font-size:.6rem;
-  padding:.22rem .6rem;cursor:pointer;letter-spacing:.07em;transition:all var(--t);
+  background:rgba(255,0,110,.18);border:1.5px solid var(--pink);border-radius:4px;
+  color:#fff;font-family:var(--font);font-size:clamp(.62rem,2vw,.72rem);font-weight:bold;
+  padding:.35rem .8rem;cursor:pointer;letter-spacing:.07em;transition:all var(--t);
+  white-space:nowrap;flex-shrink:0;
 }
-.logout-btn:hover{background:rgba(255,0,110,.14);box-shadow:var(--sp)}
+.logout-btn:hover{background:var(--pink);color:#000;box-shadow:var(--sp)}
 
 /* ━━ クレジット不足モーダル ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 #cr-modal{
