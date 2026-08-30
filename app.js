@@ -54,6 +54,10 @@ const GAMES = {
   blockkuzushi: {
     playUrl: `https://${GITHUB_USERNAME}.github.io/retro-block-kuzushi/`,
     codeUrl: `https://github.com/${GITHUB_USERNAME}/retro-block-kuzushi`
+  },
+  sudoku: {
+    playUrl: `https://${GITHUB_USERNAME}.github.io/sudoku-gas/`,
+    codeUrl: `https://github.com/${GITHUB_USERNAME}/sudoku-gas`
   }
 };
 
@@ -70,7 +74,8 @@ const GAME_LABELS = {
   shogi: "SHOGI",
   gunjin: "MILITARY SHOGI",
   uno: "UNO",
-  blockkuzushi: "BLOCK KUZUSHI"
+  blockkuzushi: "BLOCK KUZUSHI",
+  sudoku: "SUDOKU"
 };
 
 // --- STATE MANAGEMENT ---
@@ -1673,6 +1678,123 @@ function initBlockKuzushiDemo(canvas) {
   loop();
 }
 
+// 13. Sudoku Demo
+function initSudokuDemo(canvas) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const size = 6; // 6x6 demo grid (2x3 boxes)
+  const gridTop = 16;
+  const gridSize = H - gridTop - 4;
+  const cell = gridSize / size;
+  const gridLeft = (W - gridSize) / 2;
+
+  // A valid-looking 6x6 solved pattern (rows shift by 2, boxes 2x3)
+  const solved = [
+    [1, 2, 3, 4, 5, 6],
+    [4, 5, 6, 1, 2, 3],
+    [2, 3, 1, 5, 6, 4],
+    [5, 6, 4, 2, 3, 1],
+    [3, 1, 2, 6, 4, 5],
+    [6, 4, 5, 3, 1, 2]
+  ];
+
+  let revealed = [];
+  for (let r = 0; r < size; r++) revealed.push(new Array(size).fill(false));
+
+  let cellQueue = [];
+  for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) cellQueue.push({ r, c });
+  // shuffle
+  for (let i = cellQueue.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cellQueue[i], cellQueue[j]] = [cellQueue[j], cellQueue[i]];
+  }
+
+  let frame = 0;
+  let queueIndex = 0;
+  let cursor = { r: 0, c: 0 };
+
+  function resetBoard() {
+    revealed = [];
+    for (let r = 0; r < size; r++) revealed.push(new Array(size).fill(false));
+    cellQueue = [];
+    for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) cellQueue.push({ r, c });
+    for (let i = cellQueue.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cellQueue[i], cellQueue[j]] = [cellQueue[j], cellQueue[i]];
+    }
+    queueIndex = 0;
+  }
+
+  function loop() {
+    frame++;
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, W, H);
+
+    drawPixelText(ctx, 'SUDOKU', 4, 8, '#fff');
+
+    // Reveal next cell every few frames
+    if (frame % 12 === 0 && queueIndex < cellQueue.length) {
+      cursor = cellQueue[queueIndex];
+      revealed[cursor.r][cursor.c] = true;
+      queueIndex++;
+    }
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(0,243,255,0.35)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= size; i++) {
+      ctx.beginPath();
+      ctx.moveTo(gridLeft, gridTop + i * cell);
+      ctx.lineTo(gridLeft + gridSize, gridTop + i * cell);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(gridLeft + i * cell, gridTop);
+      ctx.lineTo(gridLeft + i * cell, gridTop + gridSize);
+      ctx.stroke();
+    }
+    // Bold box borders (2x3 boxes)
+    ctx.strokeStyle = '#00f3ff';
+    ctx.lineWidth = 1.5;
+    for (let i = 0; i <= size; i += 2) {
+      ctx.beginPath();
+      ctx.moveTo(gridLeft, gridTop + i * cell);
+      ctx.lineTo(gridLeft + gridSize, gridTop + i * cell);
+      ctx.stroke();
+    }
+    for (let i = 0; i <= size; i += 3) {
+      ctx.beginPath();
+      ctx.moveTo(gridLeft + i * cell, gridTop);
+      ctx.lineTo(gridLeft + i * cell, gridTop + gridSize);
+      ctx.stroke();
+    }
+
+    // Numbers
+    ctx.font = `${Math.floor(cell * 0.6)}px monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        if (!revealed[r][c]) continue;
+        const isCursor = (r === cursor.r && c === cursor.c && frame % 24 < 12);
+        ctx.fillStyle = isCursor ? '#ffe600' : '#00f3ff';
+        ctx.fillText(String(solved[r][c]), gridLeft + c * cell + cell / 2, gridTop + r * cell + cell / 2 + 1);
+      }
+    }
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+
+    // Once fully solved, pause then reshuffle
+    if (queueIndex >= cellQueue.length && frame % 90 === 0) {
+      resetBoard();
+    }
+
+    demoAnimationIds.sudoku = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
 function initDemos() {
   const cInvaders = document.getElementById("canvas-invaders");
   const cTetris = document.getElementById("canvas-tetris");
@@ -1686,6 +1808,7 @@ function initDemos() {
   const cGunjin = document.getElementById("canvas-gunjin");
   const cUno = document.getElementById("canvas-uno");
   const cBlockKuzushi = document.getElementById("canvas-blockkuzushi");
+  const cSudoku = document.getElementById("canvas-sudoku");
 
   if (cInvaders) initInvadersDemo(cInvaders);
   if (cTetris) initTetrisDemo(cTetris);
@@ -1699,6 +1822,7 @@ function initDemos() {
   if (cGunjin) initGunjinDemo(cGunjin);
   if (cUno) initUnoDemo(cUno);
   if (cBlockKuzushi) initBlockKuzushiDemo(cBlockKuzushi);
+  if (cSudoku) initSudokuDemo(cSudoku);
 }
 
 // --- HUD & INTERACTION LOGIC ---

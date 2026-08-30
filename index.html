@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="レトロアーケードハブ - ブラウザで遊べるクラシックゲーム（インベーダー、テトリス、ヘッドオン、パックマン、ブロック崩し 他）の会員制ゲームセンター風ランディングページです。サウンドとネオンエフェクト搭載。">
-  <meta name="keywords" content="レトロゲーム, アーケード, インベーダー, テトリス, ヘッドオン, パックマン, ブロック崩し, HTML5ゲーム, JavaScript, CSSネオン">
+  <meta name="description" content="レトロアーケードハブ - ブラウザで遊べるクラシックゲーム（インベーダー、テトリス、ヘッドオン、パックマン、ブロック崩し、数独 他）の会員制ゲームセンター風ランディングページです。サウンドとネオンエフェクト搭載。">
+  <meta name="keywords" content="レトロゲーム, アーケード, インベーダー, テトリス, ヘッドオン, パックマン, ブロック崩し, 数独, HTML5ゲーム, JavaScript, CSSネオン">
   <meta name="author" content="kenken6291">
 
   <!-- OGP Tags -->
   <meta property="og:title" content="RETRO ARCADE HUB - Classic Web Games">
-  <meta property="og:description" content="80年代のゲームセンターがブラウザで蘇る！会員登録・お試しプレイに対応。インベーダー、テトリス、ヘッドオン、パックマン、ブロック崩しなどをプレイしよう。">
+  <meta property="og:description" content="80年代のゲームセンターがブラウザで蘇る！会員登録・お試しプレイに対応。インベーダー、テトリス、ヘッドオン、パックマン、ブロック崩し、数独などをプレイしよう。">
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/hero_arcade.png">
 
@@ -893,6 +893,49 @@
         </article>
       </div>
 
+      <!-- 13. SUDOKU CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-sudoku" id="cab-sudoku">
+          <div class="cab-marquee">SUDOKU</div>
+
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-sudoku">READY TO PLAY</div>
+
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-sudoku" class="demo-canvas" width="130" height="140"></canvas>
+
+            <div class="screen-intro">
+              <p class="tagline">Number Puzzle</p>
+              <h2 class="description">難易度選択・タイマー・ヒント搭載！<br>じっくり数字を埋める数独パズル。</h2>
+            </div>
+          </div>
+
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="sudoku" id="play-sudoku">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="sudoku" id="code-sudoku">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
     </div>
 
     <!-- DAILY LEADERBOARD SECTION -->
@@ -1067,6 +1110,15 @@
             <li><span>Space</span> / <span>Click</span> / <span>Tap</span> : ボール発射</li>
             <li>・全てのブロックを崩すとステージクリア！</li>
             <li>・ライフ制、ランキング登録にも対応</li>
+          </ul>
+        </article>
+        <!-- Sudoku -->
+        <article class="instruction-item cab-sudoku">
+          <h3>SUDOKU</h3>
+          <ul>
+            <li><span>Click</span> / <span>Tap</span> : マスを選択して数字を入力</li>
+            <li>・難易度選択、タイマー、ミスカウント、Undo、ヒント機能を搭載</li>
+            <li>・正解データはサーバー側のみで保持し、盤面クリア時に演出表示</li>
           </ul>
         </article>
       </div>
