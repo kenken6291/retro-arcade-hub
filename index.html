@@ -979,6 +979,49 @@
         </article>
       </div>
 
+      <!-- 15. 3D MAZE CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-maze3d" id="cab-maze3d">
+          <div class="cab-marquee">3D MAZE</div>
+
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-maze3d">READY TO PLAY</div>
+
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-maze3d" class="demo-canvas" width="130" height="140"></canvas>
+
+            <div class="screen-intro">
+              <p class="tagline">First-Person 3D</p>
+              <h2 class="description">Three.js製の一人称視点迷路！<br>実際に通路を歩いてゴールを目指せ。</h2>
+            </div>
+          </div>
+
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="maze3d" id="play-maze3d">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="maze3d" id="code-maze3d">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
     </div>
 
     <!-- DAILY LEADERBOARD SECTION -->
@@ -1172,6 +1215,15 @@
             <li>・難易度3段階（EASY/NORMAL/HARD）でサイズと制限時間が変化</li>
             <li>・制限時間内にランダム生成迷路のゴールを目指す</li>
             <li>・スコアはサーバー側に保存され、ランキングに反映</li>
+          </ul>
+        </article>
+        <!-- 3D Maze -->
+        <article class="instruction-item cab-maze3d">
+          <h3>3D MAZE</h3>
+          <ul>
+            <li><span>矢印キー</span> / <span>WASD</span> : 移動、<span>マウス</span> : 視点回転</li>
+            <li>・Three.js製の一人称視点3D迷路。実際に通路を歩いてゴールを探索</li>
+            <li>・立体的な迷路構造で奥行きのある探索体験を楽しめる</li>
           </ul>
         </article>
       </div>

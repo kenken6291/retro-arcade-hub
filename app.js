@@ -62,6 +62,10 @@ const GAMES = {
   maze: {
     playUrl: `https://${GITHUB_USERNAME}.github.io/maze-escape-game/`,
     codeUrl: `https://github.com/${GITHUB_USERNAME}/maze-escape-game`
+  },
+  maze3d: {
+    playUrl: `https://${GITHUB_USERNAME}.github.io/3d-maze-gas/`,
+    codeUrl: `https://github.com/${GITHUB_USERNAME}/3d-maze-gas`
   }
 };
 
@@ -80,7 +84,8 @@ const GAME_LABELS = {
   uno: "UNO",
   blockkuzushi: "BLOCK KUZUSHI",
   sudoku: "SUDOKU",
-  maze: "MAZE ESCAPE"
+  maze: "MAZE ESCAPE",
+  maze3d: "3D MAZE"
 };
 
 // --- STATE MANAGEMENT ---
@@ -1884,6 +1889,64 @@ function initMazeDemo(canvas) {
   loop();
 }
 
+// 15. 3D Maze Demo (first-person corridor perspective)
+function initMaze3dDemo(canvas) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H / 2 + 6;
+
+  // Sequence of turns for the auto-walker: 1 = forward, -1 = turn wall (dead end flash)
+  const corridorDepth = 5;
+  let frame = 0;
+
+  function loop() {
+    frame++;
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, W, H);
+
+    drawPixelText(ctx, '3D MAZE', 4, 8, '#fff');
+
+    // Animate the "walk" by cycling the perspective offset
+    const cyclePos = (frame * 0.02) % 1;
+
+    ctx.strokeStyle = 'rgba(0,119,255,0.9)';
+    ctx.lineWidth = 1;
+
+    // Draw receding corridor segments (concentric rectangles = walls/floor/ceiling)
+    for (let i = corridorDepth; i >= 0; i--) {
+      const t = (i - cyclePos) / corridorDepth;
+      if (t < 0 || t > 1) continue;
+      const scale = 1 - t * 0.88;
+      const w = (W - 20) * scale;
+      const h = (H - 30) * scale;
+      const alpha = 0.25 + 0.65 * scale;
+      ctx.strokeStyle = `rgba(0,119,255,${alpha.toFixed(2)})`;
+      ctx.strokeRect(cx - w / 2, cy - h / 2, w, h);
+
+      // connecting corner lines toward vanishing point
+      if (i === corridorDepth) {
+        ctx.beginPath();
+        ctx.moveTo(cx - w / 2, cy - h / 2); ctx.lineTo(cx, cy);
+        ctx.moveTo(cx + w / 2, cy - h / 2); ctx.lineTo(cx, cy);
+        ctx.moveTo(cx - w / 2, cy + h / 2); ctx.lineTo(cx, cy);
+        ctx.moveTo(cx + w / 2, cy + h / 2); ctx.lineTo(cx, cy);
+        ctx.strokeStyle = 'rgba(0,119,255,0.35)';
+        ctx.stroke();
+      }
+    }
+
+    // Vanishing point glow (goal light at the end of the corridor)
+    ctx.fillStyle = '#ffe600';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    demoAnimationIds.maze3d = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
 function initDemos() {
   const cInvaders = document.getElementById("canvas-invaders");
   const cTetris = document.getElementById("canvas-tetris");
@@ -1899,6 +1962,7 @@ function initDemos() {
   const cBlockKuzushi = document.getElementById("canvas-blockkuzushi");
   const cSudoku = document.getElementById("canvas-sudoku");
   const cMaze = document.getElementById("canvas-maze");
+  const cMaze3d = document.getElementById("canvas-maze3d");
 
   if (cInvaders) initInvadersDemo(cInvaders);
   if (cTetris) initTetrisDemo(cTetris);
@@ -1914,6 +1978,7 @@ function initDemos() {
   if (cBlockKuzushi) initBlockKuzushiDemo(cBlockKuzushi);
   if (cSudoku) initSudokuDemo(cSudoku);
   if (cMaze) initMazeDemo(cMaze);
+  if (cMaze3d) initMaze3dDemo(cMaze3d);
 }
 
 // --- HUD & INTERACTION LOGIC ---

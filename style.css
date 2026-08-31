@@ -447,6 +447,8 @@ main {
 .cab-sudoku:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(0,243,255,0.75); }
 .cab-maze { border-color: var(--neon-orange); box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 15px rgba(255,108,0,0.2); }
 .cab-maze:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(255,108,0,0.75); }
+.cab-maze3d { border-color: var(--neon-blue); box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 15px rgba(0,119,255,0.2); }
+.cab-maze3d:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(0,119,255,0.75); }
 
 /* Cabinet Top Marquee (Game Title Area) */
 .cab-marquee {
@@ -492,6 +494,7 @@ main {
 .cab-blockkuzushi .cab-marquee { color: var(--neon-red); border-bottom: 4px solid var(--neon-red); }
 .cab-sudoku .cab-marquee { color: var(--neon-cyan); border-bottom: 4px solid var(--neon-cyan); }
 .cab-maze .cab-marquee { color: var(--neon-orange); border-bottom: 4px solid var(--neon-orange); }
+.cab-maze3d .cab-marquee { color: var(--neon-blue); border-bottom: 4px solid var(--neon-blue); }
 
 /* Credit Indicator (READY TO PLAY) inside Cabinet */
 .ready-indicator {
@@ -896,6 +899,7 @@ main {
 .cab-blockkuzushi .instruction-item h3 { color: var(--neon-red); text-shadow: 0 0 5px var(--neon-red); border-bottom: 1px dashed var(--neon-red); padding-bottom: 0.5rem; }
 .cab-sudoku .instruction-item h3 { color: var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan); border-bottom: 1px dashed var(--neon-cyan); padding-bottom: 0.5rem; }
 .cab-maze .instruction-item h3 { color: var(--neon-orange); text-shadow: 0 0 5px var(--neon-orange); border-bottom: 1px dashed var(--neon-orange); padding-bottom: 0.5rem; }
+.cab-maze3d .instruction-item h3 { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); border-bottom: 1px dashed var(--neon-blue); padding-bottom: 0.5rem; }
 
 .instruction-item ul {
   list-style: none;
