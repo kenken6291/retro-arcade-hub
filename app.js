@@ -70,6 +70,10 @@ const GAMES = {
   pipemaze: {
     playUrl: `https://${GITHUB_USERNAME}.github.io/route-maze-puzzle/`,
     codeUrl: `https://github.com/${GITHUB_USERNAME}/route-maze-puzzle`
+  },
+  elevatorpanic: {
+    playUrl: `https://${GITHUB_USERNAME}.github.io/elevator-panic/`,
+    codeUrl: `https://github.com/${GITHUB_USERNAME}/elevator-panic`
   }
 };
 
@@ -90,7 +94,8 @@ const GAME_LABELS = {
   sudoku: "SUDOKU",
   maze: "MAZE ESCAPE",
   maze3d: "3D MAZE",
-  pipemaze: "PIPE MAZE"
+  pipemaze: "PIPE MAZE",
+  elevatorpanic: "ELEVATOR PANIC"
 };
 
 // --- STATE MANAGEMENT ---
@@ -2037,6 +2042,121 @@ function initPipeMazeDemo(canvas) {
   loop();
 }
 
+// 17. Elevator Panic Demo
+function initElevatorPanicDemo(canvas) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const floors = 5;
+  const shaftTop = 14;
+  const shaftBottom = H - 6;
+  const floorH = (shaftBottom - shaftTop) / floors;
+  const shaftLeft = W * 0.32;
+  const shaftRight = W * 0.68;
+
+  let carFloor = floors; // 1 (top) .. floors (bottom), start at bottom
+  let targetFloor = floors;
+  let carY = shaftTop + (carFloor - 1) * floorH;
+  let doorOpen = 0; // 0..1
+  let doorState = 'closed'; // closed -> opening -> holding -> closing -> moving
+  let holdTimer = 0;
+  let waitingFloor = null;
+  let frame = 0;
+
+  function floorY(f) { return shaftTop + (f - 1) * floorH; }
+
+  function pickNewTarget() {
+    let f;
+    do { f = 1 + Math.floor(Math.random() * floors); } while (f === carFloor);
+    waitingFloor = f;
+  }
+  pickNewTarget();
+
+  function loop() {
+    frame++;
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, W, H);
+
+    drawPixelText(ctx, 'PANIC', 4, 10, '#ffd93d');
+
+    // Shaft
+    ctx.strokeStyle = 'rgba(255,217,61,0.25)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(shaftLeft, shaftTop, shaftRight - shaftLeft, shaftBottom - shaftTop);
+
+    // Floor lines + waiting customer marker
+    for (let f = 1; f <= floors; f++) {
+      const y = floorY(f) + floorH;
+      ctx.strokeStyle = 'rgba(255,217,61,0.15)';
+      ctx.beginPath();
+      ctx.moveTo(shaftLeft - 10, y);
+      ctx.lineTo(shaftRight + 10, y);
+      ctx.stroke();
+
+      if (f === waitingFloor && frame % 20 < 14) {
+        ctx.fillStyle = '#ff4d97';
+        const cy = floorY(f) + floorH - 5;
+        ctx.beginPath();
+        ctx.arc(shaftLeft - 6, cy, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // State machine: move car toward target, open/close doors
+    if (doorState === 'moving') {
+      const targetY = floorY(targetFloor);
+      const dy = targetY - carY;
+      if (Math.abs(dy) < 1.2) {
+        carY = targetY;
+        carFloor = targetFloor;
+        doorState = 'opening';
+        doorOpen = 0;
+      } else {
+        carY += dy * 0.08;
+      }
+    } else if (doorState === 'opening') {
+      doorOpen += 0.08;
+      if (doorOpen >= 1) { doorOpen = 1; doorState = 'holding'; holdTimer = 0; }
+    } else if (doorState === 'holding') {
+      holdTimer++;
+      if (carFloor === waitingFloor) {
+        // picked up / dropped off
+        if (holdTimer === 10) waitingFloor = null;
+      }
+      if (holdTimer > 26) doorState = 'closing';
+    } else if (doorState === 'closing') {
+      doorOpen -= 0.08;
+      if (doorOpen <= 0) {
+        doorOpen = 0;
+        doorState = 'moving';
+        if (waitingFloor === null) pickNewTarget();
+        targetFloor = waitingFloor !== null ? waitingFloor : targetFloor;
+      }
+    }
+
+    // Elevator car
+    const carX = shaftLeft + 4;
+    const carW = (shaftRight - shaftLeft) - 8;
+    const carH = floorH - 6;
+    const carTopY = carY + 3;
+
+    ctx.fillStyle = '#2b2140';
+    ctx.fillRect(carX, carTopY, carW, carH);
+    ctx.strokeStyle = '#7fd4ff';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(carX, carTopY, carW, carH);
+
+    // Doors sliding open from center
+    const doorGap = (carW / 2) * doorOpen;
+    ctx.fillStyle = '#4a3b6b';
+    ctx.fillRect(carX, carTopY, carW / 2 - doorGap, carH);
+    ctx.fillRect(carX + carW / 2 + doorGap, carTopY, carW / 2 - doorGap, carH);
+
+    demoAnimationIds.elevatorpanic = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
 function initDemos() {
   const cInvaders = document.getElementById("canvas-invaders");
   const cTetris = document.getElementById("canvas-tetris");
@@ -2054,6 +2174,7 @@ function initDemos() {
   const cMaze = document.getElementById("canvas-maze");
   const cMaze3d = document.getElementById("canvas-maze3d");
   const cPipeMaze = document.getElementById("canvas-pipemaze");
+  const cElevatorPanic = document.getElementById("canvas-elevatorpanic");
 
   if (cInvaders) initInvadersDemo(cInvaders);
   if (cTetris) initTetrisDemo(cTetris);
@@ -2071,6 +2192,7 @@ function initDemos() {
   if (cMaze) initMazeDemo(cMaze);
   if (cMaze3d) initMaze3dDemo(cMaze3d);
   if (cPipeMaze) initPipeMazeDemo(cPipeMaze);
+  if (cElevatorPanic) initElevatorPanicDemo(cElevatorPanic);
 }
 
 // --- HUD & INTERACTION LOGIC ---

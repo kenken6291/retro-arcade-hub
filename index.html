@@ -1065,6 +1065,49 @@
         </article>
       </div>
 
+      <!-- 17. ELEVATOR PANIC CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-elevatorpanic" id="cab-elevatorpanic">
+          <div class="cab-marquee">ELEVATOR PANIC</div>
+
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-elevatorpanic">READY TO PLAY</div>
+
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-elevatorpanic" class="demo-canvas" width="130" height="140"></canvas>
+
+            <div class="screen-intro">
+              <p class="tagline">Elevator Operator Action</p>
+              <h2 class="description">SPACEキー/タップでドア開閉！<br>お客さんを正しい階まで届けよう。</h2>
+            </div>
+          </div>
+
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="elevatorpanic" id="play-elevatorpanic">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="elevatorpanic" id="code-elevatorpanic">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
     </div>
 
     <!-- DAILY LEADERBOARD SECTION -->
@@ -1277,6 +1320,16 @@
             <li>・難易度3段階（EASY 5×5 / NORMAL 6×6 / HARD 8×8）</li>
             <li>・スタート🟢からゴール🔴までパイプを繋げるとクリア</li>
             <li>・タイムと手数を計測、記録の保存に対応</li>
+          </ul>
+        </article>
+        <!-- Elevator Panic -->
+        <article class="instruction-item cab-elevatorpanic">
+          <h3>ELEVATOR PANIC</h3>
+          <ul>
+            <li><span>SPACEキー</span> / <span>タップ</span> / <span>クリック</span> : ドア開閉</li>
+            <li>・全5階を自動で昇降するエレベーターのドアを操作</li>
+            <li>・正しい階でお客さんを乗せ降ろしするとスコア加算、間違えるとミス</li>
+            <li>・ハイスコアはサーバー側に保存され記録される</li>
           </ul>
         </article>
       </div>
