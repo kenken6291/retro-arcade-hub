@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="レトロアーケードハブ - ブラウザで遊べるクラシックゲーム（インベーダー、テトリス、ヘッドオン、パックマン、ブロック崩し、数独 他）の会員制ゲームセンター風ランディングページです。サウンドとネオンエフェクト搭載。">
-  <meta name="keywords" content="レトロゲーム, アーケード, インベーダー, テトリス, ヘッドオン, パックマン, ブロック崩し, 数独, HTML5ゲーム, JavaScript, CSSネオン">
+  <meta name="description" content="レトロアーケードハブ - ブラウザで遊べるクラシックゲーム（インベーダー、テトリス、ヘッドオン、パックマン、ブロック崩し、数独、パイプ接続パズル 他）の会員制ゲームセンター風ランディングページです。サウンドとネオンエフェクト搭載。">
+  <meta name="keywords" content="レトロゲーム, アーケード, インベーダー, テトリス, ヘッドオン, パックマン, ブロック崩し, 数独, パイプ接続パズル, HTML5ゲーム, JavaScript, CSSネオン">
   <meta name="author" content="kenken6291">
 
   <!-- OGP Tags -->
@@ -14,8 +14,8 @@
   <meta property="og:image" content="assets/hero_arcade.png">
 
   <title>RETRO ARCADE HUB - Classic Web Games</title>
-  <link rel="stylesheet" href="style.css?v=3">
-  <script src="app.js?v=3" defer></script>
+  <link rel="stylesheet" href="style.css?v=4">
+  <script src="app.js?v=4" defer></script>
 </head>
 <body class="crt-active">
 
@@ -1022,6 +1022,49 @@
         </article>
       </div>
 
+      <!-- 16. PIPE MAZE (ROUTE PUZZLE) CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-pipemaze" id="cab-pipemaze">
+          <div class="cab-marquee">PIPE MAZE</div>
+
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-pipemaze">READY TO PLAY</div>
+
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-pipemaze" class="demo-canvas" width="130" height="140"></canvas>
+
+            <div class="screen-intro">
+              <p class="tagline">Pipe Connect Puzzle</p>
+              <h2 class="description">パネルをクリックで90度回転！<br>スタートからゴールまでパイプをつなげよう。</h2>
+            </div>
+          </div>
+
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="pipemaze" id="play-pipemaze">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="pipemaze" id="code-pipemaze">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
     </div>
 
     <!-- DAILY LEADERBOARD SECTION -->
@@ -1224,6 +1267,16 @@
             <li><span>矢印キー</span> / <span>WASD</span> : 移動、<span>マウス</span> : 視点回転</li>
             <li>・Three.js製の一人称視点3D迷路。実際に通路を歩いてゴールを探索</li>
             <li>・立体的な迷路構造で奥行きのある探索体験を楽しめる</li>
+          </ul>
+        </article>
+        <!-- Pipe Maze -->
+        <article class="instruction-item cab-pipemaze">
+          <h3>PIPE MAZE</h3>
+          <ul>
+            <li><span>Click</span> / <span>Tap</span> : パネルを90度ずつ回転</li>
+            <li>・難易度3段階（EASY 5×5 / NORMAL 6×6 / HARD 8×8）</li>
+            <li>・スタート🟢からゴール🔴までパイプを繋げるとクリア</li>
+            <li>・タイムと手数を計測、記録の保存に対応</li>
           </ul>
         </article>
       </div>

@@ -66,6 +66,10 @@ const GAMES = {
   maze3d: {
     playUrl: `https://${GITHUB_USERNAME}.github.io/3d-maze-gas/`,
     codeUrl: `https://github.com/${GITHUB_USERNAME}/3d-maze-gas`
+  },
+  pipemaze: {
+    playUrl: `https://${GITHUB_USERNAME}.github.io/route-maze-puzzle/`,
+    codeUrl: `https://github.com/${GITHUB_USERNAME}/route-maze-puzzle`
   }
 };
 
@@ -85,7 +89,8 @@ const GAME_LABELS = {
   blockkuzushi: "BLOCK KUZUSHI",
   sudoku: "SUDOKU",
   maze: "MAZE ESCAPE",
-  maze3d: "3D MAZE"
+  maze3d: "3D MAZE",
+  pipemaze: "PIPE MAZE"
 };
 
 // --- STATE MANAGEMENT ---
@@ -1947,6 +1952,91 @@ function initMaze3dDemo(canvas) {
   loop();
 }
 
+// 16. Pipe Maze (Route Puzzle) Demo
+function initPipeMazeDemo(canvas) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const cols = 5, rows = 5;
+  const top = 16;
+  const gridH = H - top - 4;
+  const cell = Math.min((W - 8) / cols, gridH / rows);
+  const gridW = cell * cols;
+  const left = (W - gridW) / 2;
+
+  // 0=straight, 1=elbow. angle in degrees (0/90/180/270), target is the solved angle.
+  const panels = [
+    [{t:1,a:0},{t:0,a:90},{t:1,a:90},{t:1,a:0},{t:0,a:0}],
+    [{t:1,a:270},{t:1,a:180},{t:0,a:90},{t:1,a:90},{t:1,a:180}],
+    [{t:0,a:0},{t:1,a:0},{t:1,a:270},{t:1,a:90},{t:0,a:0}],
+    [{t:1,a:90},{t:1,a:0},{t:0,a:0},{t:1,a:180},{t:1,a:270}],
+    [{t:1,a:0},{t:1,a:270},{t:0,a:90},{t:1,a:0},{t:1,a:180}]
+  ];
+  const start = {r:0,c:0}, goal = {r:4,c:4};
+
+  let frame = 0;
+  let flipQueue = [];
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) flipQueue.push({r,c});
+  flipQueue.sort(() => Math.random() - 0.5);
+  let flipIndex = 0;
+
+  function drawPanel(cx, cy, size, type, angle) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle * Math.PI / 180);
+    ctx.strokeStyle = '#39ff14';
+    ctx.lineWidth = Math.max(2, size * 0.16);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    if (type === 0) {
+      ctx.moveTo(-size / 2, 0); ctx.lineTo(size / 2, 0);
+    } else {
+      ctx.moveTo(-size / 2, 0); ctx.lineTo(0, 0); ctx.lineTo(0, -size / 2);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function loop() {
+    frame++;
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, W, H);
+
+    drawPixelText(ctx, 'PIPE', 4, 10, '#fff');
+
+    // Occasionally rotate one panel a quarter turn (simulated player click)
+    if (frame % 26 === 0) {
+      const p = flipQueue[flipIndex % flipQueue.length];
+      panels[p.r][p.c].a = (panels[p.r][p.c].a + 90) % 360;
+      flipIndex++;
+      if (flipIndex % flipQueue.length === 0) flipQueue.sort(() => Math.random() - 0.5);
+    }
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const cx = left + c * cell + cell / 2;
+        const cy = top + r * cell + cell / 2;
+        ctx.strokeStyle = 'rgba(57,255,20,0.15)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(left + c * cell, top + r * cell, cell, cell);
+        drawPanel(cx, cy, cell * 0.72, panels[r][c].t, panels[r][c].a);
+      }
+    }
+
+    // Start / goal markers
+    const s = { x: left + start.c * cell + cell / 2, y: top + start.r * cell + cell / 2 };
+    const g = { x: left + goal.c * cell + cell / 2, y: top + goal.r * cell + cell / 2 };
+    ctx.fillStyle = '#39ff14';
+    ctx.beginPath(); ctx.arc(s.x, s.y, cell * 0.16, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ff3333';
+    ctx.beginPath(); ctx.arc(g.x, g.y, cell * 0.16, 0, Math.PI * 2); ctx.fill();
+
+    demoAnimationIds.pipemaze = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
 function initDemos() {
   const cInvaders = document.getElementById("canvas-invaders");
   const cTetris = document.getElementById("canvas-tetris");
@@ -1963,6 +2053,7 @@ function initDemos() {
   const cSudoku = document.getElementById("canvas-sudoku");
   const cMaze = document.getElementById("canvas-maze");
   const cMaze3d = document.getElementById("canvas-maze3d");
+  const cPipeMaze = document.getElementById("canvas-pipemaze");
 
   if (cInvaders) initInvadersDemo(cInvaders);
   if (cTetris) initTetrisDemo(cTetris);
@@ -1979,6 +2070,7 @@ function initDemos() {
   if (cSudoku) initSudokuDemo(cSudoku);
   if (cMaze) initMazeDemo(cMaze);
   if (cMaze3d) initMaze3dDemo(cMaze3d);
+  if (cPipeMaze) initPipeMazeDemo(cPipeMaze);
 }
 
 // --- HUD & INTERACTION LOGIC ---
