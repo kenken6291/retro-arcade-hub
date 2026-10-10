@@ -74,6 +74,10 @@ const GAMES = {
   elevatorpanic: {
     playUrl: `https://${GITHUB_USERNAME}.github.io/elevator-panic/`,
     codeUrl: `https://github.com/${GITHUB_USERNAME}/elevator-panic`
+  },
+  tsumeshogi: {
+    playUrl: `https://${GITHUB_USERNAME}.github.io/tsume-shogi/`,
+    codeUrl: `https://github.com/${GITHUB_USERNAME}/tsume-shogi`
   }
 };
 
@@ -95,7 +99,8 @@ const GAME_LABELS = {
   maze: "MAZE ESCAPE",
   maze3d: "3D MAZE",
   pipemaze: "PIPE MAZE",
-  elevatorpanic: "ELEVATOR PANIC"
+  elevatorpanic: "ELEVATOR PANIC",
+  tsumeshogi: "TSUME SHOGI"
 };
 
 // --- STATE MANAGEMENT ---
@@ -2157,6 +2162,109 @@ function initElevatorPanicDemo(canvas) {
   loop();
 }
 
+// 18. Tsume Shogi Demo (頭金の1手詰めループ演出)
+function initTsumeShogiDemo(canvas) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const N = 5;                 // 盤の右上5×5を切り出して表示
+  const cell = 18;
+  const ox = (W - N * cell) / 2;
+  const oy = 26;
+
+  // 局面: [col, row, label, isWhite]
+  const start = [
+    [2, 0, '玉', true],
+    [1, 0, '香', true],
+    [3, 0, '桂', true],
+    [2, 2, '歩', false]
+  ];
+  // 手順: 金打ち→玉逃げ不可で詰み
+  const steps = [
+    { piece: [2, 1, '金', false], text: '▲金打', drop: true },
+    { text: '詰み!' }
+  ];
+
+  let frame = 0;
+  let phase = 0; // 0:初期 1:金打ち 2:詰み表示
+
+  function drawPiece(c, r, label, isWhite, glow) {
+    const cx = ox + c * cell + cell / 2;
+    const cy = oy + r * cell + cell / 2;
+    ctx.save();
+    ctx.translate(cx, cy);
+    if (isWhite) ctx.rotate(Math.PI);
+    ctx.fillStyle = '#1e1f29';
+    ctx.strokeStyle = glow ? '#ff4500' : (isWhite ? '#00f2fe' : '#ffd700');
+    ctx.lineWidth = glow ? 1.5 : 1;
+    ctx.beginPath();
+    ctx.moveTo(0, -8);
+    ctx.lineTo(6, -5);
+    ctx.lineTo(5, 7);
+    ctx.lineTo(-5, 7);
+    ctx.lineTo(-6, -5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = isWhite ? '#00f2fe' : '#ffd700';
+    ctx.font = '9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, 0, 1);
+    ctx.restore();
+  }
+
+  function loop() {
+    frame++;
+    if (frame % 70 === 0) phase = (phase + 1) % 3;
+
+    ctx.fillStyle = '#07070d';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    drawPixelText(ctx, 'TSUME', 5, 12, '#ffe600');
+    drawPixelText(ctx, '1手詰', 80, 12, '#00f3ff');
+
+    // 盤
+    ctx.strokeStyle = 'rgba(255,230,0,0.35)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= N; i++) {
+      ctx.beginPath();
+      ctx.moveTo(ox, oy + i * cell);
+      ctx.lineTo(ox + N * cell, oy + i * cell);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(ox + i * cell, oy);
+      ctx.lineTo(ox + i * cell, oy + N * cell);
+      ctx.stroke();
+    }
+
+    const mate = phase === 2;
+    start.forEach(p => drawPiece(p[0], p[1], p[2], p[3], mate && p[2] === '玉' && frame % 20 < 12));
+    if (phase >= 1) {
+      const s = steps[0].piece;
+      drawPiece(s[0], s[1], s[2], s[3], false);
+    }
+
+    // 持ち駒・メッセージ
+    const msgY = oy + N * cell + 14;
+    if (phase === 0) {
+      ctx.fillStyle = '#ccc';
+      ctx.font = '8px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('持駒: 金', 6, msgY);
+    } else if (phase === 1) {
+      drawPixelText(ctx, steps[0].text, 6, msgY, '#ffd700');
+    } else if (frame % 30 < 20) {
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillStyle = '#ff4500';
+      ctx.textAlign = 'center';
+      ctx.fillText(steps[1].text, W / 2, msgY);
+      ctx.textAlign = 'left';
+    }
+
+    demoAnimationIds.tsumeshogi = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
 function initDemos() {
   const cInvaders = document.getElementById("canvas-invaders");
   const cTetris = document.getElementById("canvas-tetris");
@@ -2175,6 +2283,7 @@ function initDemos() {
   const cMaze3d = document.getElementById("canvas-maze3d");
   const cPipeMaze = document.getElementById("canvas-pipemaze");
   const cElevatorPanic = document.getElementById("canvas-elevatorpanic");
+  const cTsumeShogi = document.getElementById("canvas-tsumeshogi");
 
   if (cInvaders) initInvadersDemo(cInvaders);
   if (cTetris) initTetrisDemo(cTetris);
@@ -2193,6 +2302,7 @@ function initDemos() {
   if (cMaze3d) initMaze3dDemo(cMaze3d);
   if (cPipeMaze) initPipeMazeDemo(cPipeMaze);
   if (cElevatorPanic) initElevatorPanicDemo(cElevatorPanic);
+  if (cTsumeShogi) initTsumeShogiDemo(cTsumeShogi);
 }
 
 // --- HUD & INTERACTION LOGIC ---

@@ -3,19 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="レトロアーケードハブ - ブラウザで遊べるクラシックゲーム（インベーダー、テトリス、ヘッドオン、パックマン、ブロック崩し、数独、パイプ接続パズル 他）の会員制ゲームセンター風ランディングページです。サウンドとネオンエフェクト搭載。">
-  <meta name="keywords" content="レトロゲーム, アーケード, インベーダー, テトリス, ヘッドオン, パックマン, ブロック崩し, 数独, パイプ接続パズル, HTML5ゲーム, JavaScript, CSSネオン">
+  <meta name="description" content="レトロアーケードハブ - ブラウザで遊べるクラシックゲーム（インベーダー、テトリス、ヘッドオン、パックマン、ブロック崩し、数独、パイプ接続パズル、詰将棋 他）の会員制ゲームセンター風ランディングページです。サウンドとネオンエフェクト搭載。">
+  <meta name="keywords" content="レトロゲーム, アーケード, インベーダー, テトリス, ヘッドオン, パックマン, ブロック崩し, 数独, パイプ接続パズル, 詰将棋, HTML5ゲーム, JavaScript, CSSネオン">
   <meta name="author" content="kenken6291">
 
   <!-- OGP Tags -->
   <meta property="og:title" content="RETRO ARCADE HUB - Classic Web Games">
-  <meta property="og:description" content="80年代のゲームセンターがブラウザで蘇る！会員登録・お試しプレイに対応。インベーダー、テトリス、ヘッドオン、パックマン、ブロック崩し、数独などをプレイしよう。">
+  <meta property="og:description" content="80年代のゲームセンターがブラウザで蘇る！会員登録・お試しプレイに対応。インベーダー、テトリス、ヘッドオン、パックマン、ブロック崩し、数独、詰将棋などをプレイしよう。">
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/hero_arcade.png">
 
   <title>RETRO ARCADE HUB - Classic Web Games</title>
-  <link rel="stylesheet" href="style.css?v=4">
-  <script src="app.js?v=4" defer></script>
+  <link rel="stylesheet" href="style.css?v=5">
+  <script src="config.js?v=5"></script>
+  <script src="app.js?v=5" defer></script>
 </head>
 <body class="crt-active">
 
@@ -1108,6 +1109,49 @@
         </article>
       </div>
 
+      <!-- 18. TSUME SHOGI CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-tsumeshogi" id="cab-tsumeshogi">
+          <div class="cab-marquee">TSUME SHOGI</div>
+
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-tsumeshogi">READY TO PLAY</div>
+
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-tsumeshogi" class="demo-canvas" width="130" height="140"></canvas>
+
+            <div class="screen-intro">
+              <p class="tagline">Shogi Mate Puzzle Dojo</p>
+              <h2 class="description">1,000問以上の詰将棋に挑戦！<br>AIヒント＆「なぜ詰まない？」解説付き。</h2>
+            </div>
+          </div>
+
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="tsumeshogi" id="play-tsumeshogi">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="tsumeshogi" id="code-tsumeshogi">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
     </div>
 
     <!-- DAILY LEADERBOARD SECTION -->
@@ -1332,6 +1376,16 @@
             <li>・ハイスコアはサーバー側に保存され記録される</li>
           </ul>
         </article>
+        <!-- Tsume Shogi -->
+        <article class="instruction-item cab-tsumeshogi">
+          <h3>TSUME SHOGI</h3>
+          <ul>
+            <li><span>Click</span> / <span>Tap</span> : 駒を選択して移動・持ち駒を打つ</li>
+            <li>・王手の連続で玉を詰ませればクリア（ランダム出題／問題一覧から選択）</li>
+            <li>・ヒント・一手戻す・答えを見る機能つき</li>
+            <li>・不正解時はAIが「なぜ詰まないか」を解説</li>
+          </ul>
+        </article>
       </div>
     </section>
   </main>
@@ -1346,6 +1400,7 @@
       <p style="font-size: 0.65rem; color: #555; margin-top: 1rem;">
         &copy; 2026 RETRO ARCADE HUB. ALL RIGHTS RESERVED.
       </p>
+      <p class="app-version" id="app-version" title="">VERSION ---</p>
     </div>
   </footer>
 
@@ -1361,9 +1416,23 @@
 <script>
 // ================================================================
 // RETRO ARCADE HUB - 会員管理 JS v2
-// ※ GAS_URL を実際のデプロイURLに変更してください
+// ※ GAS_URL は config.js で設定してください
 // ================================================================
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyS2YbMuVF8GMuELaYh5YvyszRlcWU5MBxlEMFMX9CsT2-EbX6a6cs-_xiRsheLmj_mSw/exec';
+const CONFIG = window.APP_CONFIG || {};
+const GAS_URL = CONFIG.GAS_URL || '';
+if (!GAS_URL) console.error('[RETRO ARCADE HUB] config.js の GAS_URL が未設定です');
+
+// ── バージョン表示 ─────────────────────────────────────────────
+(function showVersion() {
+  const ver = CONFIG.APP_VERSION || '-';
+  const date = CONFIG.BUILD_DATE || '';
+  const el = document.getElementById('app-version');
+  if (el) {
+    el.textContent = `VERSION ${ver}${date ? ' (' + date + ')' : ''}`;
+    if (CONFIG.RELEASE_NOTE) el.title = CONFIG.RELEASE_NOTE;
+  }
+  console.log(`%cRETRO ARCADE HUB v${ver} ${date}`, 'color:#00f3ff;font-weight:bold');
+})();
 
 const App = { memberId:null, nickname:null, credit:0, rank:'BRONZE', memberType:'正規', adminToken:null };
 

@@ -453,6 +453,8 @@ main {
 .cab-pipemaze:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(57,255,20,0.75); }
 .cab-elevatorpanic { border-color: var(--neon-pink); box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 15px rgba(255,0,127,0.2); }
 .cab-elevatorpanic:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(255,0,127,0.75); }
+.cab-tsumeshogi { border-color: var(--neon-yellow); box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 15px rgba(255,230,0,0.2); }
+.cab-tsumeshogi:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(255,230,0,0.75); }
 
 /* Cabinet Top Marquee (Game Title Area) */
 .cab-marquee {
@@ -501,6 +503,7 @@ main {
 .cab-maze3d .cab-marquee { color: var(--neon-blue); border-bottom: 4px solid var(--neon-blue); }
 .cab-pipemaze .cab-marquee { color: var(--neon-green); border-bottom: 4px solid var(--neon-green); }
 .cab-elevatorpanic .cab-marquee { color: var(--neon-pink); border-bottom: 4px solid var(--neon-pink); }
+.cab-tsumeshogi .cab-marquee { color: var(--neon-yellow); border-bottom: 4px solid var(--neon-yellow); }
 
 /* Credit Indicator (READY TO PLAY) inside Cabinet */
 .ready-indicator {
@@ -908,6 +911,7 @@ main {
 .cab-maze3d .instruction-item h3 { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); border-bottom: 1px dashed var(--neon-blue); padding-bottom: 0.5rem; }
 .cab-pipemaze .instruction-item h3 { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); border-bottom: 1px dashed var(--neon-green); padding-bottom: 0.5rem; }
 .cab-elevatorpanic .instruction-item h3 { color: var(--neon-pink); text-shadow: 0 0 5px var(--neon-pink); border-bottom: 1px dashed var(--neon-pink); padding-bottom: 0.5rem; }
+.cab-tsumeshogi .instruction-item h3 { color: var(--neon-yellow); text-shadow: 0 0 5px var(--neon-yellow); border-bottom: 1px dashed var(--neon-yellow); padding-bottom: 0.5rem; }
 
 .instruction-item ul {
   list-style: none;
@@ -971,6 +975,20 @@ footer {
 
 .footer-author a:hover {
   text-shadow: var(--glow-pink);
+}
+
+/* バージョン表示 */
+.app-version {
+  font-family: var(--font-arcade);
+  font-size: 0.55rem;
+  color: #3a4a5a;
+  letter-spacing: 0.08em;
+  margin-top: 0.4rem;
+  cursor: default;
+}
+.app-version:hover {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 5px var(--neon-cyan);
 }
 
 .credit-warning-bubble {
