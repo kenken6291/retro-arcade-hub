@@ -78,6 +78,11 @@ const GAMES = {
   tsumeshogi: {
     playUrl: `https://${GITHUB_USERNAME}.github.io/tsume-shogi/`,
     codeUrl: `https://github.com/${GITHUB_USERNAME}/tsume-shogi`
+  },
+  tetsudo: {
+    playUrl: `https://${GITHUB_USERNAME}.github.io/tetsudo-no-tabi/`,
+    codeUrl: `https://github.com/${GITHUB_USERNAME}/tetsudo-no-tabi`,
+    sso: true // ハブのログイン状態を引き継いで遊べる（入場チケットをURLの#hub=で渡す）
   }
 };
 
@@ -100,7 +105,8 @@ const GAME_LABELS = {
   maze3d: "3D MAZE",
   pipemaze: "PIPE MAZE",
   elevatorpanic: "ELEVATOR PANIC",
-  tsumeshogi: "TSUME SHOGI"
+  tsumeshogi: "TSUME SHOGI",
+  tetsudo: "TETSUDO NO TABI"
 };
 
 // --- STATE MANAGEMENT ---
@@ -2265,6 +2271,105 @@ function initTsumeShogiDemo(canvas) {
   loop();
 }
 
+// --- TETSUDO NO TABI DEMO: 路線が順に開通し、列車が目的地へ走る ---
+function initTetsudoDemo(canvas) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+
+  // 簡略化した日本列島の都市（x, y, 名前）
+  const cities = [
+    [104, 30, '札'], [92, 52, '仙'], [80, 76, '東'], [62, 84, '名'],
+    [48, 90, '大'], [30, 96, '広'], [14, 110, '福']
+  ];
+  const routeColors = ['#39ff14', '#00f3ff', '#ff007f', '#ffe600', '#ff6c00', '#bd00ff'];
+
+  let frame = 0;
+  let opened = 0;     // 開通済み区間数
+  let trainPos = 0;   // 列車の位置（区間インデックス＋進捗）
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function loop() {
+    frame++;
+    const cycle = frame % 600;
+    if (cycle === 0) { opened = 0; trainPos = 0; }
+    if (cycle < 300 && cycle % 50 === 49 && opened < cities.length - 1) opened++;
+    if (cycle >= 300 && cycle < 540) trainPos = Math.min(cities.length - 1, (cycle - 300) / 40);
+
+    ctx.fillStyle = '#07070d';
+    ctx.fillRect(0, 0, W, H);
+    drawPixelText(ctx, 'TETSUDO', 5, 12, '#39ff14');
+
+    // 未開通区間（点線）
+    ctx.setLineDash([2, 3]);
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < cities.length - 1; i++) {
+      ctx.beginPath();
+      ctx.moveTo(cities[i][0], cities[i][1]);
+      ctx.lineTo(cities[i + 1][0], cities[i + 1][1]);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // 開通済み区間（太線＋グロー）
+    for (let i = 0; i < opened; i++) {
+      const col = routeColors[i % routeColors.length];
+      ctx.strokeStyle = col;
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 6;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(cities[i][0], cities[i][1]);
+      ctx.lineTo(cities[i + 1][0], cities[i + 1][1]);
+      ctx.stroke();
+    }
+    ctx.shadowBlur = 0;
+
+    // 都市
+    cities.forEach((c, i) => {
+      const goal = i === 0 || i === cities.length - 1;
+      ctx.fillStyle = goal ? '#ffe600' : '#fff';
+      ctx.beginPath();
+      ctx.arc(c[0], c[1], goal ? 4 : 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ccc';
+      ctx.font = '8px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(c[2], c[0] + 5, c[1] - 3);
+    });
+
+    // 列車
+    if (cycle >= 300) {
+      const seg = Math.min(cities.length - 2, Math.floor(trainPos));
+      const t = trainPos - seg;
+      const x = lerp(cities[seg][0], cities[seg + 1][0], t);
+      const y = lerp(cities[seg][1], cities[seg + 1][1], t);
+      ctx.fillStyle = '#ff3333';
+      ctx.fillRect(x - 4, y - 3, 8, 6);
+      ctx.fillStyle = '#00f3ff';
+      ctx.fillRect(x - 2, y - 2, 2, 2);
+      ctx.fillRect(x + 1, y - 2, 2, 2);
+    }
+
+    // メッセージ
+    const msgY = H - 12;
+    if (cycle < 300) {
+      drawPixelText(ctx, 'OPEN ' + opened + '/' + (cities.length - 1), 6, msgY, '#00f3ff');
+    } else if (cycle >= 540 && frame % 30 < 20) {
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillStyle = '#ffe600';
+      ctx.textAlign = 'center';
+      ctx.fillText('目的地達成!', W / 2, msgY);
+      ctx.textAlign = 'left';
+    }
+
+    demoAnimationIds.tetsudo = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
 function initDemos() {
   const cInvaders = document.getElementById("canvas-invaders");
   const cTetris = document.getElementById("canvas-tetris");
@@ -2284,6 +2389,7 @@ function initDemos() {
   const cPipeMaze = document.getElementById("canvas-pipemaze");
   const cElevatorPanic = document.getElementById("canvas-elevatorpanic");
   const cTsumeShogi = document.getElementById("canvas-tsumeshogi");
+  const cTetsudo = document.getElementById("canvas-tetsudo");
 
   if (cInvaders) initInvadersDemo(cInvaders);
   if (cTetris) initTetrisDemo(cTetris);
@@ -2303,6 +2409,7 @@ function initDemos() {
   if (cPipeMaze) initPipeMazeDemo(cPipeMaze);
   if (cElevatorPanic) initElevatorPanicDemo(cElevatorPanic);
   if (cTsumeShogi) initTsumeShogiDemo(cTsumeShogi);
+  if (cTetsudo) initTetsudoDemo(cTetsudo);
 }
 
 // --- HUD & INTERACTION LOGIC ---
@@ -2322,6 +2429,17 @@ function playCoinDoorSE() {
 // Full CRT glitch load transition to link
 async function launchGame(gameKey, element) {
   const gameLabel = (GAME_LABELS && GAME_LABELS[gameKey]) || gameKey.toUpperCase();
+  let playUrl = GAMES[gameKey].playUrl;
+
+  // 自動ログイン対応ゲームは、クレジット消費の前に入場チケットを発行しておく
+  // （チケット発行に失敗した場合はクレジットを消費しない）
+  if (GAMES[gameKey].sso) {
+    if (typeof window.issueGameTicket !== "function") return;
+    const ticket = await window.issueGameTicket(gameKey);
+    if (!ticket) return;
+    // #以降はサーバーへ送られないため、チケットがアクセスログ等に残らない
+    playUrl += "#hub=" + encodeURIComponent(ticket);
+  }
 
   // 会員クレジットを消費（不足時は会員システム側がモーダルで案内する）
   const ok = await window.useCredit(gameLabel, 1);
@@ -2340,7 +2458,7 @@ async function launchGame(gameKey, element) {
   if (!loadingOverlay) {
     // Fallback if overlay element missing
     playStartSE(() => {
-      window.location.href = GAMES[gameKey].playUrl;
+      window.location.href = playUrl;
     });
     return;
   }
@@ -2374,7 +2492,7 @@ async function launchGame(gameKey, element) {
     
     // Play Game start fanfare
     playStartSE(() => {
-      window.location.href = GAMES[gameKey].playUrl;
+      window.location.href = playUrl;
     });
   }, 2600);
 }

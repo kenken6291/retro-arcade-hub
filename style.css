@@ -455,6 +455,8 @@ main {
 .cab-elevatorpanic:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(255,0,127,0.75); }
 .cab-tsumeshogi { border-color: var(--neon-yellow); box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 15px rgba(255,230,0,0.2); }
 .cab-tsumeshogi:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(255,230,0,0.75); }
+.cab-tetsudo { border-color: var(--neon-green); box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 15px rgba(57,255,20,0.2); }
+.cab-tetsudo:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(57,255,20,0.75); }
 
 /* Cabinet Top Marquee (Game Title Area) */
 .cab-marquee {
@@ -504,6 +506,7 @@ main {
 .cab-pipemaze .cab-marquee { color: var(--neon-green); border-bottom: 4px solid var(--neon-green); }
 .cab-elevatorpanic .cab-marquee { color: var(--neon-pink); border-bottom: 4px solid var(--neon-pink); }
 .cab-tsumeshogi .cab-marquee { color: var(--neon-yellow); border-bottom: 4px solid var(--neon-yellow); }
+.cab-tetsudo .cab-marquee { color: var(--neon-green); border-bottom: 4px solid var(--neon-green); }
 
 /* Credit Indicator (READY TO PLAY) inside Cabinet */
 .ready-indicator {
@@ -911,6 +914,7 @@ main {
 .cab-maze3d .instruction-item h3 { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); border-bottom: 1px dashed var(--neon-blue); padding-bottom: 0.5rem; }
 .cab-pipemaze .instruction-item h3 { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); border-bottom: 1px dashed var(--neon-green); padding-bottom: 0.5rem; }
 .cab-elevatorpanic .instruction-item h3 { color: var(--neon-pink); text-shadow: 0 0 5px var(--neon-pink); border-bottom: 1px dashed var(--neon-pink); padding-bottom: 0.5rem; }
+.cab-tetsudo .instruction-item h3, .instruction-item.cab-tetsudo h3 { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); border-bottom: 1px dashed var(--neon-green); padding-bottom: 0.5rem; }
 .cab-tsumeshogi .instruction-item h3 { color: var(--neon-yellow); text-shadow: 0 0 5px var(--neon-yellow); border-bottom: 1px dashed var(--neon-yellow); padding-bottom: 0.5rem; }
 
 .instruction-item ul {

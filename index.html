@@ -15,8 +15,8 @@
 
   <title>RETRO ARCADE HUB - Classic Web Games</title>
   <link rel="stylesheet" href="style.css?v=5">
-  <script src="config.js?v=5"></script>
-  <script src="app.js?v=5" defer></script>
+  <script src="config.js?v=6"></script>
+  <script src="app.js?v=6" defer></script>
 </head>
 <body class="crt-active">
 
@@ -1152,6 +1152,49 @@
         </article>
       </div>
 
+      <!-- 19. TETSUDO NO TABI CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-tetsudo" id="cab-tetsudo">
+          <div class="cab-marquee">TETSUDO NO TABI</div>
+
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-tetsudo">READY TO PLAY</div>
+
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-tetsudo" class="demo-canvas" width="130" height="140"></canvas>
+
+            <div class="screen-intro">
+              <p class="tagline">Japan Railway Board Game</p>
+              <h2 class="description">日本の路線をつないで目的地をめざせ！<br>オンライン対戦＆CPU、車窓ナレーション付き。</h2>
+            </div>
+          </div>
+
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="tetsudo" id="play-tetsudo">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="tetsudo" id="code-tetsudo">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
     </div>
 
     <!-- DAILY LEADERBOARD SECTION -->
@@ -1386,6 +1429,16 @@
             <li>・不正解時はAIが「なぜ詰まないか」を解説</li>
           </ul>
         </article>
+        <!-- Tetsudo no Tabi -->
+        <article class="instruction-item cab-tetsudo">
+          <h3>TETSUDO NO TABI</h3>
+          <ul>
+            <li><span>Click</span> / <span>Tap</span> : カードを引く・路線を開通させる</li>
+            <li>・日本地図の路線を色カードで開通させ、目的地どうしをつなげば高得点</li>
+            <li>・オンライン対戦とCPU対戦に対応、開通時は車窓ナレーションが流れる</li>
+            <li>・このハブでログイン済みなら、そのまま会員として遊べる（ログイン不要）</li>
+          </ul>
+        </article>
       </div>
     </section>
   </main>
@@ -1434,7 +1487,7 @@ if (!GAS_URL) console.error('[RETRO ARCADE HUB] config.js の GAS_URL が未設�
   console.log(`%cRETRO ARCADE HUB v${ver} ${date}`, 'color:#00f3ff;font-weight:bold');
 })();
 
-const App = { memberId:null, nickname:null, credit:0, rank:'BRONZE', memberType:'正規', adminToken:null };
+const App = { memberId:null, nickname:null, credit:0, rank:'BRONZE', memberType:'正規', adminToken:null, sessionToken:null };
 
 // ── GAS通信 ───────────────────────────────────────────────────
 async function api(payload) {
@@ -1642,6 +1695,7 @@ function onLogin(r) {
   App.credit     = r.credit;
   App.rank       = r.rank;
   App.memberType = r.memberType || '正規';
+  App.sessionToken = r.sessionToken || null; // 連携ゲームへの自動ログイン（SSO）用
 
   // HUD更新
   document.getElementById('hud-nick').textContent = App.nickname;
@@ -1665,7 +1719,8 @@ function onLogin(r) {
 document.getElementById('logout-btn').addEventListener('click', () => {
   // window.confirm() は一部のブラウザ（LINE/Instagram等のアプリ内ブラウザ）で
   // ブロックされ常にキャンセル扱いになることがあるため使用しない
-  Object.assign(App, { memberId:null, nickname:null, credit:0, rank:'BRONZE', adminToken:null });
+  if (App.sessionToken) api({ action:'logout', sessionToken:App.sessionToken }).catch(() => {});
+  Object.assign(App, { memberId:null, nickname:null, credit:0, rank:'BRONZE', adminToken:null, sessionToken:null });
   loginEmail.value = ''; loginPassword.value = '';
   trialNick.value = ''; trialLoginId.value = ''; trialLoginPin.value = '';
   document.getElementById('hud').classList.remove('on');
@@ -1694,6 +1749,25 @@ window.useCredit = async function(gameName = 'ゲーム', amount = 1) {
     return false;
   } catch(e) { return false; }
 };
+// ── 連携ゲームへの入場チケット発行（外部から呼べる） ─────────────
+// 成功時はチケット文字列、失敗時は null を返す（理由はalertで案内）
+window.issueGameTicket = async function(gameKey) {
+  if (!App.memberId) { alert('ログインが必要です。'); return null; }
+  if (!App.sessionToken) {
+    alert('自動ログインの準備ができていません。お手数ですが、いったんログアウトして再度ログインしてください。');
+    return null;
+  }
+  try {
+    const r = await api({ action:'issueGameTicket', game:gameKey, sessionToken:App.sessionToken });
+    if (r.success && r.ticket) return r.ticket;
+    alert(r.message || '自動ログインの準備に失敗しました。');
+    return null;
+  } catch(e) {
+    alert('通信エラーが発生しました。');
+    return null;
+  }
+};
+
 document.getElementById('modal-close').addEventListener('click', () => {
   document.getElementById('cr-modal').classList.remove('on');
 });

@@ -12,6 +12,9 @@
 //   SPREADSHEET_ID  : スプレッドシートID
 //   ADMIN_PASSWORD  : 管理者パスワード
 //   PIN_SALT        : PINハッシュ用ソルト（他人に推測されないランダムな文字列）
+//   HUB_SSO_SECRET  : 連携ゲーム（鉄道の旅など）へ認証済みで渡すための共通秘密鍵
+//                     → setupSsoSecret() を1回実行すると自動生成されます。
+//                       同じ値を連携先ゲームのGASのスクリプトプロパティにも設定してください。
 const MEMBER_SHEET_NAME = '会員データ';
 const LOG_SHEET_NAME    = 'ログ';
 const TRIAL_CREDIT      = 50;   // お試し登録時の初期クレジット
@@ -38,6 +41,16 @@ const REGISTER_WINDOW_MINUTES  = 10; // 会員登録のレート制限ウィン�
 const FORGOT_MAX_PER_WINDOW    = 3;  // パスワード再発行: 下記の時間内に許可する最大件数（メールアドレス単位）
 const FORGOT_WINDOW_MINUTES    = 15; // パスワード再発行のレート制限ウィンドウ（分）
 const PASSWORD_MIN_LENGTH      = 8;  // 新パスワードの最小文字数
+
+// ━━ 連携ゲームへのシングルサインオン（SSO）設定 ━━━━━━━━━━━━━━
+// ハブでログイン済みの会員が、連携ゲームをログイン操作なしで遊べるようにする。
+// ハブGASが短命・使い捨ての「入場チケット」に署名し、ゲーム側GASが検証する。
+const HUB_SESSION_PREFIX   = 'hubsess_';  // ハブ側セッション（CacheService）
+const HUB_SESSION_SEC      = 21600;       // ハブ側セッション有効期間（秒・最大6時間）
+const SSO_TICKET_TTL_SEC   = 120;         // 入場チケットの有効期間（秒）
+const SSO_GAMES = {                       // ゲームキー → チケットの宛先（aud）
+  tetsudo: 'tetsudo-no-tabi'
+};
 
 // ━━ スプレッドシート列定義（0始まり） ━━━━━━━━━━━━━━━━━━━
 // A=会員番号 B=会員名 C=ニックネーム D=クレジット E=ステータス
@@ -112,6 +125,8 @@ function handleRequest(e) {
       case 'forgotPassword':    result = handleForgotPassword(data);     break; // ★仮パスワード再発行
       case 'getCredit':          result = handleGetCredit(data);          break;
       case 'useCredit':          result = handleUseCredit(data);          break;
+      case 'issueGameTicket':    result = handleIssueGameTicket(data);    break; // ★連携ゲームへの入場チケット発行
+      case 'logout':             result = handleLogout(data);             break;
       case 'adminLogin':         result = handleAdminLogin(data);         break;
       case 'adminGetMembers':    result = handleAdminGetMembers(data);    break;
       case 'adminAddMember':     result = handleAdminAddMember(data);     break;
@@ -224,6 +239,7 @@ function handleLogin(data) {
     rank:       member.rank || 'BRONZE',
     memberType: member.memberType || '正規',
     mustChangePassword: isTrueFlag_(member.mustChangePassword),
+    sessionToken: createHubSession_(member.memberId),
     message:    'ようこそ、' + (member.nickname || member.memberName) + 'さん！'
   };
 }
@@ -319,6 +335,7 @@ function handleTrialLogin(data) {
     credit:     parseInt(member.credit) || 0,
     rank:       member.rank || 'BRONZE',
     memberType: 'お試し',
+    sessionToken: createHubSession_(member.memberId),
     message:    'ようこそ、' + (member.nickname || member.memberName) + 'さん！'
   };
 }
@@ -365,6 +382,7 @@ function handleTrialRegister(data) {
     rank:       'BRONZE',
     memberType: 'お試し',
     pin:        pin, // ★次回ログイン用。この応答でのみ平文を返す（保存はハッシュのみ）
+    sessionToken: createHubSession_(newId),
     message:    'お試し登録完了！会員番号: ' + newId + '　クレジット ' + TRIAL_CREDIT + '枚プレゼント🎮'
   };
 }
@@ -403,6 +421,82 @@ function handleUseCredit(data) {
   updateMemberField(memberId, COL.credit, newCredit);
   writeLog(memberId, 'CR使用', gameName + ' -' + amount + ' 残' + newCredit);
   return { success: true, credit: newCredit, message: '残りクレジット: ' + newCredit };
+}
+
+// ━━ ハブ側セッション ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ログイン成功時に発行し、連携ゲームの入場チケット発行時の本人確認に使う。
+
+function createHubSession_(memberId) {
+  const token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');
+  CacheService.getScriptCache().put(HUB_SESSION_PREFIX + token, String(memberId), HUB_SESSION_SEC);
+  return token;
+}
+
+function getHubSessionMemberId_(token) {
+  if (!token) return null;
+  const cache = CacheService.getScriptCache();
+  const memberId = cache.get(HUB_SESSION_PREFIX + token);
+  if (!memberId) return null;
+  cache.put(HUB_SESSION_PREFIX + token, memberId, HUB_SESSION_SEC); // 利用のたびに延長
+  return memberId;
+}
+
+function handleLogout(data) {
+  const token = String(data.sessionToken || '');
+  if (token) CacheService.getScriptCache().remove(HUB_SESSION_PREFIX + token);
+  return { success: true };
+}
+
+// ━━ 連携ゲームへの入場チケット発行（SSO） ━━━━━━━━━━━━━━━━━━━
+// 形式: base64url(JSON本文) + '.' + base64url(HMAC-SHA256(本文, HUB_SSO_SECRET))
+// ゲーム側GASは同じ HUB_SSO_SECRET で署名を検証し、有効期限・宛先・使い捨て(nonce)を確認する。
+
+function handleIssueGameTicket(data) {
+  const game = String(data.game || '');
+  const aud  = SSO_GAMES[game];
+  if (!aud) return { success: false, message: 'このゲームは自動ログインに対応していません。' };
+
+  const secret = PropertiesService.getScriptProperties().getProperty('HUB_SSO_SECRET');
+  if (!secret) return { success: false, message: '連携設定（HUB_SSO_SECRET）が未設定です。管理者にお問い合わせください。' };
+
+  const memberId = getHubSessionMemberId_(String(data.sessionToken || ''));
+  if (!memberId) return { success: false, code: 'SESSION_EXPIRED', message: 'ログインの有効期限が切れました。もう一度ログインしてください。' };
+
+  const member = findMember(memberId);
+  if (!member) return { success: false, message: '会員が見つかりません。' };
+  if (member.status !== '有効') return { success: false, message: 'このアカウントは現在無効です。' };
+  if (member.memberType === '正規' && isTrueFlag_(member.mustChangePassword)) {
+    return { success: false, message: '先にパスワードを変更してください。' };
+  }
+
+  const now = Date.now();
+  const payload = {
+    v: 1,
+    aud: aud,
+    mid: String(member.memberId),
+    nick: String(member.nickname || member.memberName || '').replace(/^'/, ''),
+    type: member.memberType || '正規',
+    email: member.memberType === '正規' ? String(member.email || '').trim().toLowerCase() : '',
+    iat: now,
+    exp: now + SSO_TICKET_TTL_SEC * 1000,
+    nonce: Utilities.getUuid().replace(/-/g, '')
+  };
+  const body = Utilities.base64EncodeWebSafe(JSON.stringify(payload), Utilities.Charset.UTF_8);
+  const sig  = Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature(body, secret));
+  writeLog(member.memberId, 'SSOチケット発行', aud);
+  return { success: true, ticket: body + '.' + sig };
+}
+
+/** 初回のみエディタから手動実行：HUB_SSO_SECRET を生成して表示する */
+function setupSsoSecret() {
+  const props = PropertiesService.getScriptProperties();
+  let secret = props.getProperty('HUB_SSO_SECRET');
+  if (!secret) {
+    secret = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');
+    props.setProperty('HUB_SSO_SECRET', secret);
+  }
+  Logger.log('HUB_SSO_SECRET = ' + secret);
+  Logger.log('↑この値を、連携ゲーム（鉄道の旅）のGASのスクリプトプロパティ「HUB_SSO_SECRET」にも設定してください。');
 }
 
 // ━━ 管理者認証 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
