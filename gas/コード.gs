@@ -12,7 +12,7 @@
 //   SPREADSHEET_ID  : スプレッドシートID
 //   ADMIN_PASSWORD  : 管理者パスワード
 //   PIN_SALT        : PINハッシュ用ソルト（他人に推測されないランダムな文字列）
-//   HUB_SSO_SECRET  : 連携ゲーム（鉄道の旅など）へ認証済みで渡すための共通秘密鍵
+//   HUB_SSO_SECRET  : 連携ゲーム（鉄道の旅・ねこならべなど）へ認証済みで渡すための共通秘密鍵
 //                     → setupSsoSecret() を1回実行すると自動生成されます。
 //                       同じ値を連携先ゲームのGASのスクリプトプロパティにも設定してください。
 const MEMBER_SHEET_NAME = '会員データ';
@@ -49,7 +49,8 @@ const HUB_SESSION_PREFIX   = 'hubsess_';  // ハブ側セッション（CacheSer
 const HUB_SESSION_SEC      = 21600;       // ハブ側セッション有効期間（秒・最大6時間）
 const SSO_TICKET_TTL_SEC   = 120;         // 入場チケットの有効期間（秒）
 const SSO_GAMES = {                       // ゲームキー → チケットの宛先（aud）
-  tetsudo: 'tetsudo-no-tabi'
+  tetsudo: 'tetsudo-no-tabi',
+  nekonarabe: 'nekonarabe'
 };
 
 // ━━ スプレッドシート列定義（0始まり） ━━━━━━━━━━━━━━━━━━━
@@ -496,7 +497,7 @@ function setupSsoSecret() {
     props.setProperty('HUB_SSO_SECRET', secret);
   }
   Logger.log('HUB_SSO_SECRET = ' + secret);
-  Logger.log('↑この値を、連携ゲーム（鉄道の旅）のGASのスクリプトプロパティ「HUB_SSO_SECRET」にも設定してください。');
+  Logger.log('↑この値を、連携ゲーム（鉄道の旅・ねこならべ）のGASのスクリプトプロパティ「HUB_SSO_SECRET」にも設定してください。');
 }
 
 // ━━ 管理者認証 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

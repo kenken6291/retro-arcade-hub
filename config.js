@@ -8,7 +8,7 @@ window.APP_CONFIG = Object.freeze({
   GAS_URL: 'https://script.google.com/macros/s/AKfycbyS2YbMuVF8GMuELaYh5YvyszRlcWU5MBxlEMFMX9CsT2-EbX6a6cs-_xiRsheLmj_mSw/exec',
 
   // バージョン情報（更新のたびに書き換え）
-  APP_VERSION: '1.19.0',
+  APP_VERSION: '1.20.0',
   BUILD_DATE: '2026-10-20',
-  RELEASE_NOTE: '鉄道の旅（TETSUDO NO TABI）を追加・ハブのログインのまま遊べる自動ログインに対応'
+  RELEASE_NOTE: 'ねこならべ（NEKO NARABE）を追加・ハブのログインのまま遊べる自動ログインに対応'
 });

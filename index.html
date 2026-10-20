@@ -14,9 +14,9 @@
   <meta property="og:image" content="assets/hero_arcade.png">
 
   <title>RETRO ARCADE HUB - Classic Web Games</title>
-  <link rel="stylesheet" href="style.css?v=5">
-  <script src="config.js?v=6"></script>
-  <script src="app.js?v=6" defer></script>
+  <link rel="stylesheet" href="style.css?v=6">
+  <script src="config.js?v=7"></script>
+  <script src="app.js?v=7" defer></script>
 </head>
 <body class="crt-active">
 
@@ -1195,6 +1195,49 @@
         </article>
       </div>
 
+      <!-- 20. NEKO NARABE CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-nekonarabe" id="cab-nekonarabe">
+          <div class="cab-marquee">NEKO NARABE</div>
+
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-nekonarabe">READY TO PLAY</div>
+
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-nekonarabe" class="demo-canvas" width="130" height="140"></canvas>
+
+            <div class="screen-intro">
+              <p class="tagline">Cat Logic Puzzle</p>
+              <h2 class="description">各行・各列・各色に猫を1匹ずつ！<br>ミケ先生のヒント付きロジックパズル。</h2>
+            </div>
+          </div>
+
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="nekonarabe" id="play-nekonarabe">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="nekonarabe" id="code-nekonarabe">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
     </div>
 
     <!-- DAILY LEADERBOARD SECTION -->
@@ -1436,6 +1479,16 @@
             <li><span>Click</span> / <span>Tap</span> : カードを引く・路線を開通させる</li>
             <li>・日本地図の路線を色カードで開通させ、目的地どうしをつなげば高得点</li>
             <li>・オンライン対戦とCPU対戦に対応、開通時は車窓ナレーションが流れる</li>
+            <li>・このハブでログイン済みなら、そのまま会員として遊べる（ログイン不要）</li>
+          </ul>
+        </article>
+        <!-- Neko Narabe -->
+        <article class="instruction-item cab-nekonarabe">
+          <h3>NEKO NARABE</h3>
+          <ul>
+            <li><span>Tap</span> : マスを ×→猫→空白 の順に切り替え</li>
+            <li>・8×8の盤面で、各行・各列・各色ブロックに猫を1匹ずつ置く</li>
+            <li>・猫どうしは周囲8マスで隣り合えない。ミスは魚3つまで</li>
             <li>・このハブでログイン済みなら、そのまま会員として遊べる（ログイン不要）</li>
           </ul>
         </article>

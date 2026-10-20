@@ -83,6 +83,11 @@ const GAMES = {
     playUrl: `https://${GITHUB_USERNAME}.github.io/tetsudo-no-tabi/`,
     codeUrl: `https://github.com/${GITHUB_USERNAME}/tetsudo-no-tabi`,
     sso: true // ハブのログイン状態を引き継いで遊べる（入場チケットをURLの#hub=で渡す）
+  },
+  nekonarabe: {
+    playUrl: `https://${GITHUB_USERNAME}.github.io/nekonarabe/`,
+    codeUrl: `https://github.com/${GITHUB_USERNAME}/nekonarabe`,
+    sso: true // ハブのログイン状態を引き継いで遊べる
   }
 };
 
@@ -106,7 +111,8 @@ const GAME_LABELS = {
   pipemaze: "PIPE MAZE",
   elevatorpanic: "ELEVATOR PANIC",
   tsumeshogi: "TSUME SHOGI",
-  tetsudo: "TETSUDO NO TABI"
+  tetsudo: "TETSUDO NO TABI",
+  nekonarabe: "NEKO NARABE"
 };
 
 // --- STATE MANAGEMENT ---
@@ -2370,6 +2376,72 @@ function initTetsudoDemo(canvas) {
   loop();
 }
 
+// --- NEKO NARABE DEMO: 8×8の色ブロックに猫が1匹ずつ並んでいく ---
+function initNekonarabeDemo(canvas) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+  const N = 8, CELL = 13, OX = Math.floor((W - N * CELL) / 2), OY = 22;
+  const colors = ['#ff007f', '#00f3ff', '#39ff14', '#ffe600', '#bd00ff', '#ff6c00', '#0077ff', '#ff3333'];
+  // 色ブロック（各行・各列・各色に1匹、隣接なしの解を持つ配置）
+  const regions = [
+    '00011223',
+    '00111223',
+    '00112223',
+    '54412233',
+    '54444233',
+    '55447663',
+    '55477666',
+    '55777766'
+  ];
+  const solution = [1, 3, 5, 7, 2, 0, 6, 4]; // 行ごとの猫の列（隣接なし）
+  let frame = 0;
+
+  function loop() {
+    frame++;
+    const cycle = frame % 540;
+    const placed = Math.min(N, Math.floor(cycle / 40));
+
+    ctx.fillStyle = '#07070d';
+    ctx.fillRect(0, 0, W, H);
+    drawPixelText(ctx, 'NEKO', 5, 12, '#ff007f');
+
+    for (let r = 0; r < N; r++) {
+      for (let c = 0; c < N; c++) {
+        const col = colors[Number(regions[r][c])];
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = col;
+        ctx.fillRect(OX + c * CELL, OY + r * CELL, CELL - 1, CELL - 1);
+        ctx.globalAlpha = 1;
+      }
+    }
+    for (let r = 0; r < placed; r++) {
+      const x = OX + solution[r] * CELL + CELL / 2;
+      const y = OY + r * CELL + CELL / 2 + 1;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(x - 4, y - 2); ctx.lineTo(x - 3, y - 6); ctx.lineTo(x - 1, y - 3); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(x + 4, y - 2); ctx.lineTo(x + 3, y - 6); ctx.lineTo(x + 1, y - 3); ctx.fill();
+      ctx.fillStyle = '#07070d';
+      ctx.fillRect(x - 2, y - 1, 1, 1);
+      ctx.fillRect(x + 1, y - 1, 1, 1);
+    }
+
+    const msgY = H - 10;
+    if (placed < N) {
+      drawPixelText(ctx, 'CAT ' + placed + '/' + N, 6, msgY, '#00f3ff');
+    } else if (frame % 30 < 20) {
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillStyle = '#ffe600';
+      ctx.textAlign = 'center';
+      ctx.fillText('クリアだニャ!', W / 2, msgY);
+      ctx.textAlign = 'left';
+    }
+    demoAnimationIds.nekonarabe = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
 function initDemos() {
   const cInvaders = document.getElementById("canvas-invaders");
   const cTetris = document.getElementById("canvas-tetris");
@@ -2390,6 +2462,7 @@ function initDemos() {
   const cElevatorPanic = document.getElementById("canvas-elevatorpanic");
   const cTsumeShogi = document.getElementById("canvas-tsumeshogi");
   const cTetsudo = document.getElementById("canvas-tetsudo");
+  const cNekonarabe = document.getElementById("canvas-nekonarabe");
 
   if (cInvaders) initInvadersDemo(cInvaders);
   if (cTetris) initTetrisDemo(cTetris);
@@ -2410,6 +2483,7 @@ function initDemos() {
   if (cElevatorPanic) initElevatorPanicDemo(cElevatorPanic);
   if (cTsumeShogi) initTsumeShogiDemo(cTsumeShogi);
   if (cTetsudo) initTetsudoDemo(cTetsudo);
+  if (cNekonarabe) initNekonarabeDemo(cNekonarabe);
 }
 
 // --- HUD & INTERACTION LOGIC ---
