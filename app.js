@@ -88,6 +88,18 @@ const GAMES = {
     playUrl: `https://${GITHUB_USERNAME}.github.io/nekonarabe/`,
     codeUrl: `https://github.com/${GITHUB_USERNAME}/nekonarabe`,
     sso: true // ハブのログイン状態を引き継いで遊べる
+  },
+  pingpong: {
+    playUrl: `https://${GITHUB_USERNAME}.github.io/practice10/`,
+    codeUrl: `https://github.com/${GITHUB_USERNAME}/practice10`
+  },
+  flappy: {
+    playUrl: `https://${GITHUB_USERNAME}.github.io/practice8/`,
+    codeUrl: `https://github.com/${GITHUB_USERNAME}/practice8`
+  },
+  shinkei: {
+    playUrl: `https://${GITHUB_USERNAME}.github.io/practice6/`,
+    codeUrl: `https://github.com/${GITHUB_USERNAME}/practice6`
   }
 };
 
@@ -112,7 +124,10 @@ const GAME_LABELS = {
   elevatorpanic: "ELEVATOR PANIC",
   tsumeshogi: "TSUME SHOGI",
   tetsudo: "TETSUDO NO TABI",
-  nekonarabe: "NEKO NARABE"
+  nekonarabe: "NEKO NARABE",
+  pingpong: "PING PONG",
+  flappy: "FLAPPY BIRD",
+  shinkei: "SHINKEI SUIJAKU"
 };
 
 // --- STATE MANAGEMENT ---
@@ -2442,6 +2457,174 @@ function initNekonarabeDemo(canvas) {
   loop();
 }
 
+// --- PING PONG DEMO: 左右のパドルでラリーが続く ---
+function initPingPongDemo(canvas) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const TOP = 20, BOT = H - 16, PH = 22;
+  let bx = W / 2, by = (TOP + BOT) / 2, vx = 1.6, vy = 1.1;
+  let ly = by, ry = by, sl = 0, sr = 0;
+
+  function loop() {
+    bx += vx; by += vy;
+    if (by < TOP + 2 || by > BOT - 2) { vy = -vy; by = Math.max(TOP + 2, Math.min(BOT - 2, by)); }
+    // CPU同士：ボールを追いかける（少し遅れる）
+    ly += Math.max(-1.3, Math.min(1.3, by - ly));
+    ry += Math.max(-1.3, Math.min(1.3, by - ry));
+    if (bx < 12 && vx < 0) {
+      if (Math.abs(by - ly) < PH / 2 + 2) { vx = -vx * 1.03; vy += (by - ly) * 0.08; }
+      else if (bx < 0) { sr = (sr + 1) % 10; bx = W / 2; by = (TOP + BOT) / 2; vx = 1.6; vy = 1.1; }
+    }
+    if (bx > W - 12 && vx > 0) {
+      if (Math.abs(by - ry) < PH / 2 + 2) { vx = -vx * 1.03; vy += (by - ry) * 0.08; }
+      else if (bx > W) { sl = (sl + 1) % 10; bx = W / 2; by = (TOP + BOT) / 2; vx = -1.6; vy = -1.1; }
+    }
+    if (Math.abs(vx) > 3) vx = Math.sign(vx) * 3;
+    vy = Math.max(-2, Math.min(2, vy));
+
+    ctx.fillStyle = '#05070d';
+    ctx.fillRect(0, 0, W, H);
+    drawPixelText(ctx, 'PONG', 5, 12, '#00f3ff');
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(sl + ' - ' + sr, W / 2 + 22, 12);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#2a3a60';
+    ctx.fillRect(0, TOP - 2, W, 1); ctx.fillRect(0, BOT + 1, W, 1);
+    for (let y = TOP; y < BOT; y += 8) ctx.fillRect(W / 2 - 1, y, 2, 4);
+    ctx.fillStyle = '#00f3ff'; ctx.fillRect(6, ly - PH / 2, 4, PH);
+    ctx.fillStyle = '#ff007f'; ctx.fillRect(W - 10, ry - PH / 2, 4, PH);
+    ctx.fillStyle = '#fff'; ctx.fillRect(bx - 2, by - 2, 4, 4);
+    demoAnimationIds.pingpong = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+// --- FLAPPY BIRD DEMO: 鳥が自動で土管のすき間をくぐる ---
+function initFlappyDemo(canvas) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const GROUND = H - 14, GAP = 46, PW = 18;
+  let birdY = 60, vel = 0, score = 0, frame = 0;
+  let pipes = [{ x: W + 10, gy: 50 }, { x: W + 80, gy: 70 }];
+
+  function loop() {
+    frame++;
+    pipes.forEach(pp => { pp.x -= 1; });
+    if (pipes[0].x < -PW) { pipes.shift(); pipes.push({ x: pipes[pipes.length - 1].x + 70, gy: 30 + Math.random() * 50 }); score++; }
+    // 自動操縦：次の土管のすき間中央より下なら羽ばたく
+    const next = pipes.find(pp => pp.x + PW > 20) || pipes[0];
+    const target = next.gy + GAP / 2 + 4;
+    vel += 0.22;
+    if (birdY > target && vel > 0) vel = -2.6;
+    birdY = Math.max(22, Math.min(GROUND - 5, birdY + vel));
+
+    ctx.fillStyle = '#0b1a33';
+    ctx.fillRect(0, 0, W, H);
+    pipes.forEach(pp => {
+      ctx.fillStyle = '#39ff14';
+      ctx.fillRect(pp.x, 18, PW, pp.gy - 18);
+      ctx.fillRect(pp.x, pp.gy + GAP, PW, GROUND - pp.gy - GAP);
+      ctx.fillStyle = '#1f9e0c';
+      ctx.fillRect(pp.x - 2, pp.gy - 6, PW + 4, 6);
+      ctx.fillRect(pp.x - 2, pp.gy + GAP, PW + 4, 6);
+    });
+    ctx.fillStyle = '#c98a3a'; ctx.fillRect(0, GROUND, W, H - GROUND);
+    ctx.fillStyle = '#7fe05a'; ctx.fillRect(0, GROUND, W, 3);
+    // 鳥
+    const bx = 26;
+    ctx.fillStyle = '#ffe600';
+    ctx.beginPath(); ctx.arc(bx, birdY, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.fillRect(bx + 1, birdY - 3, 3, 3);
+    ctx.fillStyle = '#000'; ctx.fillRect(bx + 3, birdY - 2, 1, 1);
+    ctx.fillStyle = '#ff6c00'; ctx.fillRect(bx + 4, birdY, 4, 2);
+    ctx.fillStyle = '#ffb000'; ctx.fillRect(bx - 5, birdY + (frame % 10 < 5 ? -1 : 1), 4, 2);
+    ctx.fillStyle = '#05070d'; ctx.fillRect(0, 0, W, 18);
+    drawPixelText(ctx, 'FLAPPY', 5, 12, '#ff6c00');
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'right';
+    ctx.fillText(String(score % 1000), W - 5, 12); ctx.textAlign = 'left';
+    demoAnimationIds.flappy = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+// --- SHINKEI SUIJAKU DEMO: カードを2枚ずつめくってペアをそろえる ---
+function initShinkeiDemo(canvas) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const COLS = 4, ROWS = 4, CW = 24, CH = 22, GX = 5, GY = 3;
+  const OX = Math.floor((W - (COLS * CW + (COLS - 1) * GX)) / 2), OY = 22;
+  const ranks = ['A', '7', 'K', '3', 'Q', '9', 'J', '5'];
+  const suits = ['♠', '♥', '♦', '♣'];
+  let cards = [], steps = [], step = 0, timer = 0, pairs = 0;
+
+  function setup() {
+    const deck = [];
+    ranks.forEach((r, i) => { deck.push({ r, s: suits[i % 4] }, { r, s: suits[(i + 1) % 4] }); });
+    for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+    cards = deck.map(c => ({ ...c, open: false, done: false }));
+    // 手順：ハズレ→アタリを交互に（デモ用の決まった流れ）
+    steps = [];
+    const idx = cards.map((_, i) => i);
+    const byRank = {};
+    idx.forEach(i => { (byRank[cards[i].r] = byRank[cards[i].r] || []).push(i); });
+    const pairList = Object.values(byRank);
+    pairList.forEach((pr, k) => {
+      if (k % 2 === 0 && k + 1 < pairList.length) steps.push([pr[0], pairList[k + 1][0], false]);
+      steps.push([pr[0], pr[1], true]);
+    });
+    step = 0; timer = 0; pairs = 0;
+  }
+  setup();
+
+  function drawCard(c, x, y) {
+    if (c.open || c.done) {
+      ctx.fillStyle = c.done ? '#fff7d6' : '#fff';
+      ctx.fillRect(x, y, CW, CH);
+      ctx.fillStyle = (c.s === '♥' || c.s === '♦') ? '#ff3333' : '#111';
+      ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(c.r, x + CW / 2, y + 11);
+      ctx.fillText(c.s, x + CW / 2, y + 20);
+      ctx.textAlign = 'left';
+      if (c.done) { ctx.strokeStyle = '#ffe600'; ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, CW - 1, CH - 1); }
+    } else {
+      ctx.fillStyle = '#bd00ff'; ctx.fillRect(x, y, CW, CH);
+      ctx.strokeStyle = '#e9a8ff'; ctx.lineWidth = 1; ctx.strokeRect(x + 2.5, y + 2.5, CW - 5, CH - 5);
+    }
+  }
+
+  function loop() {
+    timer++;
+    if (step < steps.length) {
+      const [a, b, hit] = steps[step];
+      if (timer === 20) cards[a].open = true;
+      if (timer === 40) cards[b].open = true;
+      if (timer === 75) {
+        cards[a].open = cards[b].open = false;
+        if (hit) { cards[a].done = cards[b].done = true; pairs++; }
+        step++; timer = 0;
+      }
+    } else if (timer > 150) {
+      setup();
+    }
+
+    ctx.fillStyle = '#062a17';
+    ctx.fillRect(0, 0, W, H);
+    drawPixelText(ctx, 'CARD', 5, 12, '#bd00ff');
+    cards.forEach((c, i) => drawCard(c, OX + (i % COLS) * (CW + GX), OY + Math.floor(i / COLS) * (CH + GY)));
+    const msgY = H - 4;
+    if (step < steps.length) {
+      drawPixelText(ctx, "PAIR " + pairs + "/8", 6, H - 10, "#00f3ff");
+    } else if (timer % 30 < 20) {
+      ctx.font = 'bold 11px sans-serif'; ctx.fillStyle = '#ffe600'; ctx.textAlign = 'center';
+      ctx.fillText('クリア！', W / 2, msgY); ctx.textAlign = 'left';
+    }
+    demoAnimationIds.shinkei = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
 function initDemos() {
   const cInvaders = document.getElementById("canvas-invaders");
   const cTetris = document.getElementById("canvas-tetris");
@@ -2484,6 +2667,13 @@ function initDemos() {
   if (cTsumeShogi) initTsumeShogiDemo(cTsumeShogi);
   if (cTetsudo) initTetsudoDemo(cTetsudo);
   if (cNekonarabe) initNekonarabeDemo(cNekonarabe);
+
+  const cPingPong = document.getElementById("canvas-pingpong");
+  const cFlappy = document.getElementById("canvas-flappy");
+  const cShinkei = document.getElementById("canvas-shinkei");
+  if (cPingPong) initPingPongDemo(cPingPong);
+  if (cFlappy) initFlappyDemo(cFlappy);
+  if (cShinkei) initShinkeiDemo(cShinkei);
 }
 
 // --- HUD & INTERACTION LOGIC ---

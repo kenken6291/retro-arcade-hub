@@ -459,6 +459,12 @@ main {
 .cab-tetsudo:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(57,255,20,0.75); }
 .cab-nekonarabe { border-color: var(--neon-pink); box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 15px rgba(255,0,127,0.2); }
 .cab-nekonarabe:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(255,0,127,0.75); }
+.cab-pingpong { border-color: var(--neon-cyan); box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 15px rgba(0,243,255,0.2); }
+.cab-pingpong:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(0,243,255,0.75); }
+.cab-flappy { border-color: var(--neon-orange); box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 15px rgba(255,108,0,0.2); }
+.cab-flappy:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(255,108,0,0.75); }
+.cab-shinkei { border-color: var(--neon-purple); box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 15px rgba(189,0,255,0.2); }
+.cab-shinkei:hover { box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 35px rgba(189,0,255,0.75); }
 
 /* Cabinet Top Marquee (Game Title Area) */
 .cab-marquee {
@@ -510,6 +516,9 @@ main {
 .cab-tsumeshogi .cab-marquee { color: var(--neon-yellow); border-bottom: 4px solid var(--neon-yellow); }
 .cab-tetsudo .cab-marquee { color: var(--neon-green); border-bottom: 4px solid var(--neon-green); }
 .cab-nekonarabe .cab-marquee { color: var(--neon-pink); border-bottom: 4px solid var(--neon-pink); }
+.cab-pingpong .cab-marquee { color: var(--neon-cyan); border-bottom: 4px solid var(--neon-cyan); }
+.cab-flappy .cab-marquee { color: var(--neon-orange); border-bottom: 4px solid var(--neon-orange); }
+.cab-shinkei .cab-marquee { color: var(--neon-purple); border-bottom: 4px solid var(--neon-purple); }
 
 /* Credit Indicator (READY TO PLAY) inside Cabinet */
 .ready-indicator {
@@ -918,6 +927,9 @@ main {
 .cab-pipemaze .instruction-item h3 { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); border-bottom: 1px dashed var(--neon-green); padding-bottom: 0.5rem; }
 .cab-elevatorpanic .instruction-item h3 { color: var(--neon-pink); text-shadow: 0 0 5px var(--neon-pink); border-bottom: 1px dashed var(--neon-pink); padding-bottom: 0.5rem; }
 .cab-tetsudo .instruction-item h3, .instruction-item.cab-tetsudo h3 { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); border-bottom: 1px dashed var(--neon-green); padding-bottom: 0.5rem; }
+.instruction-item.cab-pingpong h3 { color: var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan); border-bottom: 1px dashed var(--neon-cyan); padding-bottom: 0.5rem; }
+.instruction-item.cab-flappy h3 { color: var(--neon-orange); text-shadow: 0 0 5px var(--neon-orange); border-bottom: 1px dashed var(--neon-orange); padding-bottom: 0.5rem; }
+.instruction-item.cab-shinkei h3 { color: var(--neon-purple); text-shadow: 0 0 5px var(--neon-purple); border-bottom: 1px dashed var(--neon-purple); padding-bottom: 0.5rem; }
 .instruction-item.cab-nekonarabe h3 { color: var(--neon-pink); text-shadow: 0 0 5px var(--neon-pink); border-bottom: 1px dashed var(--neon-pink); padding-bottom: 0.5rem; }
 .cab-tsumeshogi .instruction-item h3 { color: var(--neon-yellow); text-shadow: 0 0 5px var(--neon-yellow); border-bottom: 1px dashed var(--neon-yellow); padding-bottom: 0.5rem; }
 

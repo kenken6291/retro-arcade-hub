@@ -1238,6 +1238,135 @@
         </article>
       </div>
 
+      <!-- 21. PING PONG CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-pingpong" id="cab-pingpong">
+          <div class="cab-marquee">PING PONG</div>
+
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-pingpong">READY TO PLAY</div>
+
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-pingpong" class="demo-canvas" width="130" height="140"></canvas>
+
+            <div class="screen-intro">
+              <p class="tagline">Retro Ping Pong</p>
+              <h2 class="description">CPU対戦・2人対戦・通信対戦！<br>パドルで打ち返して勝利点をめざせ。</h2>
+            </div>
+          </div>
+
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="pingpong" id="play-pingpong">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="pingpong" id="code-pingpong">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
+      <!-- 22. FLAPPY BIRD CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-flappy" id="cab-flappy">
+          <div class="cab-marquee">FLAPPY BIRD</div>
+
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-flappy">READY TO PLAY</div>
+
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-flappy" class="demo-canvas" width="130" height="140"></canvas>
+
+            <div class="screen-intro">
+              <p class="tagline">Tap to Flap</p>
+              <h2 class="description">タップで羽ばたき、土管のすき間をくぐれ！<br>難易度3段階＆メダル獲得。</h2>
+            </div>
+          </div>
+
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="flappy" id="play-flappy">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="flappy" id="code-flappy">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
+      <!-- 23. SHINKEI SUIJAKU CABINET -->
+      <div class="cabinet-wrapper">
+        <article class="cabinet cab-shinkei" id="cab-shinkei">
+          <div class="cab-marquee">SHINKEI SUIJAKU</div>
+
+          <!-- Credit Lamp -->
+          <div class="ready-indicator" id="ind-shinkei">READY TO PLAY</div>
+
+          <!-- Monitor Screen -->
+          <div class="cab-screen-area">
+            <!-- Game Demo Canvas -->
+            <canvas id="canvas-shinkei" class="demo-canvas" width="130" height="140"></canvas>
+
+            <div class="screen-intro">
+              <p class="tagline">Memory Card Game</p>
+              <h2 class="description">同じ数字のカードを2枚そろえよう！<br>ひとりで・CPU対戦・ふたりで。</h2>
+            </div>
+          </div>
+
+          <!-- Joystick & Buttons Control Panel -->
+          <div class="cab-control-panel">
+            <div class="joystick" aria-hidden="true"></div>
+            <div class="buttons-group" aria-hidden="true">
+              <div class="arcade-btn"></div>
+              <div class="arcade-btn"></div>
+            </div>
+          </div>
+
+          <!-- Coin Door -->
+          <div class="cab-coin-door" title="クリックしてコインを投入！">
+            <div class="coin-return" aria-hidden="true">
+              <div class="coin-slot"></div>
+            </div>
+          </div>
+
+          <!-- Hover Action Screen overlay -->
+          <div class="cabinet-overlay-actions">
+            <a href="#" class="action-btn btn-play" data-game="shinkei" id="play-shinkei">PLAY GAME</a>
+            <a href="#" class="action-btn btn-code" data-game="shinkei" id="code-shinkei">VIEW CODE</a>
+          </div>
+        </article>
+      </div>
+
     </div>
 
     <!-- DAILY LEADERBOARD SECTION -->
@@ -1490,6 +1619,36 @@
             <li>・8×8の盤面で、各行・各列・各色ブロックに猫を1匹ずつ置く</li>
             <li>・猫どうしは周囲8マスで隣り合えない。ミスは魚3つまで</li>
             <li>・このハブでログイン済みなら、そのまま会員として遊べる（ログイン不要）</li>
+          </ul>
+        </article>
+        <!-- Ping Pong -->
+        <article class="instruction-item cab-pingpong">
+          <h3>PING PONG</h3>
+          <ul>
+            <li><span>マウス</span> / <span>指</span> の上下、<span>W</span> <span>S</span> / <span>↑</span> <span>↓</span> : パドル移動</li>
+            <li>・1人（CPU対戦）／2人対戦（1台で左右）／通信対戦（部屋を作って別端末と）</li>
+            <li>・勝利点は5点か11点。並んだらデュースで2点差がつくまで続く</li>
+            <li>・むずかしさ3段階、効果音・BGMのON/OFF対応</li>
+          </ul>
+        </article>
+        <!-- Flappy Bird -->
+        <article class="instruction-item cab-flappy">
+          <h3>FLAPPY BIRD</h3>
+          <ul>
+            <li><span>Tap</span> / <span>Click</span> / <span>Space</span> <span>↑</span> : 羽ばたく</li>
+            <li><span>P</span> / <span>Esc</span> : 一時停止、<span>M</span> : 音のON/OFF</li>
+            <li>・土管を1本くぐるごとに1点。10点ごとにスピードアップ、15点超で動く土管が登場</li>
+            <li>・難易度3段階、ベストスコアとメダル（ブロンズ〜プラチナ）を記録</li>
+          </ul>
+        </article>
+        <!-- Shinkei Suijaku -->
+        <article class="instruction-item cab-shinkei">
+          <h3>SHINKEI SUIJAKU</h3>
+          <ul>
+            <li><span>Click</span> / <span>Tap</span> : カードを1回に2枚めくる</li>
+            <li>・数字が同じならペア成立（マークや色はちがってもOK）</li>
+            <li>・ひとりで（手数とタイムに挑戦）／CPU対戦（強さ3段階）／ふたりで</li>
+            <li>・カード枚数は16枚・26枚・52枚から選べる</li>
           </ul>
         </article>
       </div>
